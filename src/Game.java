@@ -7,8 +7,6 @@ import enigma.console.TextAttributes;
 import java.awt.Color;
 
 class Game {
-    Board b;
-
     public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 60, 30, 18, 3);
     public TextAttributes attr;
     public Color c;
@@ -20,7 +18,11 @@ class Game {
     public int mousex, mousey; // mouse text coords.
     public int keypr; // key pressed?
     public int rkey; // key (for press/release)
+    public int DELAY;
     // ----------------------------------------------------
+
+    int TIME;
+    Board b;
 
     Game() throws Exception { // --- Contructor
         attr = new TextAttributes(c.BLACK, c.GREEN);
@@ -60,15 +62,25 @@ class Game {
         // ----------------------------------------------------
 
         b = new Board();
+        DELAY = 20;
+        TIME = 60;
     }
 
     void play() throws InterruptedException {
         int px = 5, py = 5;
+        int timeDecreaseLimit = 1000;
+        int timeDecreaseCounter = 0;
         while (true) {
+            if(timeDecreaseCounter >= timeDecreaseLimit){
+                timeDecreaseCounter = 0;
+                TIME--;
+            }
             cn.getTextWindow().setCursorPosition(0, 0);
             b.displayBoard();
             cn.getTextWindow().setCursorPosition(px, py);
-            cn.getTextWindow().output(b.getBoard()[py][px], attr);    
+            cn.getTextWindow().output(b.getBoard()[py][px], attr);
+            cn.getTextWindow().setCursorPosition(12, 0);
+            cn.getTextWindow().output(Integer.toString(TIME)+" ");
             if (keypr == 1) { // if keyboard button pressed
                 if (rkey == KeyEvent.VK_LEFT)
                     px--;
@@ -91,7 +103,8 @@ class Game {
 
                 keypr = 0; // last action
             }
-            Thread.sleep(20);
+            Thread.sleep(DELAY);
+            timeDecreaseCounter+=DELAY;
         }
     }
 }
