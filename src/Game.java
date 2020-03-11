@@ -9,6 +9,8 @@ import java.awt.Color;
 class Game {
     public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 60, 30, 18, 3);
     public TextAttributes attr;
+    public int OFFSET_X = 0;
+    public int OFFSET_Y = 0;
     public Color c;
     public TextMouseListener tmlis;
     public KeyListener klis;
@@ -22,6 +24,7 @@ class Game {
     // ----------------------------------------------------
 
     int TIME;
+    String MODE;
     Board b;
 
     Game() throws Exception { // --- Contructor
@@ -64,6 +67,7 @@ class Game {
         b = new Board();
         DELAY = 20;
         TIME = 60;
+        MODE = "Free";
     }
 
     void play() throws InterruptedException {
@@ -71,16 +75,18 @@ class Game {
         int timeDecreaseLimit = 1000;
         int timeDecreaseCounter = 0;
         while (true) {
-            if(timeDecreaseCounter >= timeDecreaseLimit){
+            if (timeDecreaseCounter >= timeDecreaseLimit) {
                 timeDecreaseCounter = 0;
                 TIME--;
             }
             cn.getTextWindow().setCursorPosition(0, 0);
             b.displayBoard();
-            cn.getTextWindow().setCursorPosition(px, py);
+            cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
             cn.getTextWindow().output(b.getBoard()[py][px], attr);
-            cn.getTextWindow().setCursorPosition(12, 0);
-            cn.getTextWindow().output(Integer.toString(TIME)+" ");
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
+            cn.getTextWindow().output(Integer.toString(TIME) + " ");
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 3 + OFFSET_Y);
+            cn.getTextWindow().output(MODE + "   ");
             if (keypr == 1) { // if keyboard button pressed
                 if (rkey == KeyEvent.VK_LEFT)
                     px--;
@@ -90,21 +96,21 @@ class Game {
                     py--;
                 if (rkey == KeyEvent.VK_DOWN)
                     py++;
-
-                char rckey = (char) rkey;
-                // left right up down
-
-                if (rkey == KeyEvent.VK_SPACE) {
-                    String str;
-                    str = cn.readLine(); // keyboardlistener running and readline input by using enter
-                    cn.getTextWindow().setCursorPosition(5, 20);
-                    cn.getTextWindow().output(str);
+                if (rkey == 116 || rkey == 84) { // If the key pressed is T
+                    MODE = "Take";
                 }
-
+                if (rkey == 102 || rkey == 70) { // If the key pressed is F
+                    MODE = "Free";
+                }
+                if(rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")){
+                    // progress the stack evaluation
+                }
                 keypr = 0; // last action
             }
             Thread.sleep(DELAY);
-            timeDecreaseCounter+=DELAY;
+            if (MODE.equals("Take")) {
+                timeDecreaseCounter += DELAY;
+            }
         }
     }
 }
