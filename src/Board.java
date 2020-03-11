@@ -1,48 +1,64 @@
 import java.util.Random;
 
 class Board {
-    private String[][] board;
+    private String[][] BOARD;
     private String[] SYMBOLS = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "*", "/" };
-    private Queue queue;
+    private Queue INPUTQUEUE;
+    private int inputQueueSize;
     private Random rnd;
     private int startingSymbolCount;
 
     public Board() {
-        board = new String[10][10];
-        rnd = new Random();
+        inputQueueSize = 200;
         startingSymbolCount = 40;
+        BOARD = new String[10][10];
+        INPUTQUEUE = new Queue(inputQueueSize);
+        rnd = new Random();
+        fillInputQueueRandomly();
         clearBoard();
-        fillBoardRandomly();
+        fillBoardRandomly(startingSymbolCount);
     }
 
     public String[][] getBoard() {
-        return board;
+        return BOARD;
+    }
+
+    public Queue getInputQueue(){
+        return INPUTQUEUE;
+    }
+
+    void fillInputQueueRandomly(){
+        int rndNum;
+        for(int i = 0; i < inputQueueSize; i++){
+            rndNum = rnd.nextInt(SYMBOLS.length);
+            INPUTQUEUE.enqueue(SYMBOLS[rndNum]);
+        }
     }
 
     void clearBoard() {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                board[i][j] = ".";
+        for (int i = 0; i < BOARD.length; i++) {
+            for (int j = 0; j < BOARD[i].length; j++) {
+                BOARD[i][j] = ".";
             }
         }
     }
 
-    void fillBoardRandomly() {
-        int randomSymbolIndex;
+    void fillBoardRandomly(int symbolCount) {
         int randomRowIndex;
         int randomColIndex;
+        String randomSymbol;
         boolean cannotPlaceSymbol;
 
-        for (int i = 0; i < startingSymbolCount; i++) {
+        for (int i = 0; i < symbolCount; i++) {
+            randomSymbol = (String)INPUTQUEUE.dequeue();
             cannotPlaceSymbol = true;
-            randomSymbolIndex = rnd.nextInt(13);
 
             while (cannotPlaceSymbol) {
-                randomRowIndex = rnd.nextInt(board.length);
-                randomColIndex = rnd.nextInt(board[randomRowIndex].length);
+                randomRowIndex = rnd.nextInt(BOARD.length);
+                randomColIndex = rnd.nextInt(BOARD[randomRowIndex].length);
 
-                if (!board[randomRowIndex][randomColIndex].equals("\\.")) {
-                    board[randomRowIndex][randomColIndex] = SYMBOLS[randomSymbolIndex];
+                if (BOARD[randomRowIndex][randomColIndex].contains(".")) { //Tried using equals to see if there exists a dot on the boards specified index but it does not work
+                    BOARD[randomRowIndex][randomColIndex] = randomSymbol;
                     cannotPlaceSymbol = false;
                 }
             }
@@ -50,9 +66,9 @@ class Board {
     }
 
     void displayBoard() {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                    System.out.print(board[i][j]);
+        for (int i = 0; i < BOARD.length; i++) {
+            for (int j = 0; j < BOARD[i].length; j++) {
+                    System.out.print(BOARD[i][j]);
             }
             System.out.println();
         }
