@@ -14,7 +14,6 @@ class Game {
     public Color c;
     public TextMouseListener tmlis;
     public KeyListener klis;
-    public String YELLOW_BG = "\033[43m";
     // ------ Standard variables for mouse and keyboard ------
     public int mousepr; // mouse pressed?
     public int mousex, mousey; // mouse text coords.
@@ -88,13 +87,13 @@ class Game {
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 3 + OFFSET_Y);
             cn.getTextWindow().output(MODE + "   ");
             if (keypr == 1) { // if keyboard button pressed
-                if (rkey == KeyEvent.VK_LEFT)
+                if (rkey == KeyEvent.VK_LEFT && px > 0)
                     px--;
-                if (rkey == KeyEvent.VK_RIGHT)
+                if (rkey == KeyEvent.VK_RIGHT && px + 1 < b.getBoard()[py].length)
                     px++;
-                if (rkey == KeyEvent.VK_UP)
+                if (rkey == KeyEvent.VK_UP && py > 0)
                     py--;
-                if (rkey == KeyEvent.VK_DOWN)
+                if (rkey == KeyEvent.VK_DOWN && py + 1 < b.getBoard().length)
                     py++;
                 if (rkey == 116 || rkey == 84) { // If the key pressed is T
                     MODE = "Take";
@@ -102,7 +101,7 @@ class Game {
                 if (rkey == 102 || rkey == 70) { // If the key pressed is F
                     MODE = "Free";
                 }
-                if(rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")){
+                if (rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")) {
                     // progress the stack evaluation
                 }
                 keypr = 0; // last action
