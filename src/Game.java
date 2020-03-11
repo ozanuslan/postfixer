@@ -24,6 +24,7 @@ class Game {
     // ----------------------------------------------------
     int TIME;
     String MODE;
+    int SCORE;
     Board b;
 
     Game() throws Exception { // --- Contructor
@@ -67,6 +68,19 @@ class Game {
         DELAY = 20;
         TIME = 60;
         MODE = "Free";
+        SCORE = 0;
+    }
+
+    void showFinalScreen(){
+        cn.getTextWindow().setCursorPosition(0,18 + OFFSET_Y);
+        System.out.println(" _____                        _____                ");
+        System.out.println("|  __ \\                      |  _  |               ");
+        System.out.println("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ");
+        System.out.println("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|");
+        System.out.println("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ");
+        System.out.println(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ");
+        System.out.println();
+        System.out.println("Final Score: "+SCORE);
     }
 
     void play() throws InterruptedException {
@@ -77,6 +91,7 @@ class Game {
                 timeDecreaseCounter = 0;
                 TIME--;
             }
+
             cn.getTextWindow().setCursorPosition(0, 0);
             b.displayBoard();
             cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
@@ -85,6 +100,7 @@ class Game {
             cn.getTextWindow().output(Integer.toString(TIME) + " ");
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 3 + OFFSET_Y);
             cn.getTextWindow().output(MODE + "   ");
+
             if (keypr == 1) { // if keyboard button pressed
                 if (rkey == KeyEvent.VK_LEFT && px > 0)
                     px--;
@@ -105,10 +121,12 @@ class Game {
                 }
                 keypr = 0; // last action
             }
+
             Thread.sleep(DELAY);
             if (MODE.equalsIgnoreCase("Take")) {
                 timeDecreaseCounter += DELAY;
             }
         }
+        showFinalScreen();
     }
 }
