@@ -20,8 +20,8 @@ class Game {
     public int keypr; // key pressed?
     public int rkey; // key (for press/release)
     public int DELAY;
+    int px = 5, py = 5;
     // ----------------------------------------------------
-
     int TIME;
     String MODE;
     Board b;
@@ -70,10 +70,9 @@ class Game {
     }
 
     void play() throws InterruptedException {
-        int px = 5, py = 5;
         int timeDecreaseLimit = 1000;
         int timeDecreaseCounter = 0;
-        while (true) {
+        while (TIME > 0) {
             if (timeDecreaseCounter >= timeDecreaseLimit) {
                 timeDecreaseCounter = 0;
                 TIME--;
@@ -107,7 +106,7 @@ class Game {
                 keypr = 0; // last action
             }
             Thread.sleep(DELAY);
-            if (MODE.equals("Take")) {
+            if (MODE.equalsIgnoreCase("Take")) {
                 timeDecreaseCounter += DELAY;
             }
         }
