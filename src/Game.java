@@ -26,6 +26,8 @@ class Game {
     String MODE;
     int SCORE;
     Board b;
+    int timeDecreaseLimit = 1000; // A second in miliseconds
+    int timeDelayCounter = 0; // A counter for counting miliseconds
 
     Game() throws Exception { // --- Contructor
         attr = new TextAttributes(c.BLACK, c.GREEN);
@@ -96,16 +98,8 @@ class Game {
         System.out.println(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ");
     }
 
-    void play() throws InterruptedException {
-        int timeDecreaseLimit = 1000; // A second in miliseconds
-        int timeDelayCounter = 0; // A counter for counting miliseconds
-        while (TIME > 0) {
-            if (timeDelayCounter >= timeDecreaseLimit) {
-                timeDelayCounter = 0;
-                TIME--;
-            }
-
-            displayInputQueue(12+OFFSET_X, 5+OFFSET_Y);
+    void displayGameScreen(){
+        displayInputQueue(12+OFFSET_X, 5+OFFSET_Y);
             cn.getTextWindow().setCursorPosition(0, 0);
             b.displayBoard();
             cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
@@ -116,33 +110,47 @@ class Game {
             cn.getTextWindow().output("Score:"+Integer.toString(SCORE) + "   ");
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
             cn.getTextWindow().output("Mode:"+MODE + "   ");
-            
+    }
 
-            if (keypr == 1) { // if keyboard button pressed
-                if ((rkey == KeyEvent.VK_LEFT || rkey == 97 || rkey == 65) && px > 0)
-                    px--;
-                if ((rkey == KeyEvent.VK_RIGHT || rkey == 100 || rkey == 68) && px + 1 < b.getBoard()[py].length)
-                    px++;
-                if ((rkey == KeyEvent.VK_UP || rkey == 119 || rkey == 87) && py > 0)
-                    py--;
-                if ((rkey == KeyEvent.VK_DOWN || rkey == 115 || rkey == 83) && py + 1 < b.getBoard().length)
-                    py++;
-                if (rkey == 116 || rkey == 84) { // If the key pressed is T
-                    MODE = "Take";
-                }
-                if (rkey == 102 || rkey == 70) { // If the key pressed is F
-                    MODE = "Free";
-                }
-                if (rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")) {
-                    // progress the stack evaluation
-                }
-                keypr = 0; // last action
+    void takeKeyPress(){
+        if (keypr == 1) { // if keyboard button pressed
+            if ((rkey == KeyEvent.VK_LEFT || rkey == 97 || rkey == 65) && px > 0)
+                px--;
+            if ((rkey == KeyEvent.VK_RIGHT || rkey == 100 || rkey == 68) && px + 1 < b.getBoard()[py].length)
+                px++;
+            if ((rkey == KeyEvent.VK_UP || rkey == 119 || rkey == 87) && py > 0)
+                py--;
+            if ((rkey == KeyEvent.VK_DOWN || rkey == 115 || rkey == 83) && py + 1 < b.getBoard().length)
+                py++;
+            if (rkey == 116 || rkey == 84) { // If the key pressed is T
+                MODE = "Take";
             }
+            if (rkey == 102 || rkey == 70) { // If the key pressed is F
+                MODE = "Free";
+            }
+            if (rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")) {
+                // progress the stack evaluation
+            }
+            keypr = 0; // last action
+        }
+    }
 
-            Thread.sleep(DELAY);
-            if (MODE.equalsIgnoreCase("Take")) {
-                timeDelayCounter += DELAY;
-            }
+    void progressTime(){
+        if (timeDelayCounter >= timeDecreaseLimit) {
+            timeDelayCounter = 0;
+            TIME--;
+        }
+        if (MODE.equalsIgnoreCase("Take")) {
+            timeDelayCounter += DELAY;
+        }
+    }
+
+    void play() throws InterruptedException {
+        while (TIME > 0) {
+            progressTime();  
+            displayGameScreen();
+            takeKeyPress();
+            Thread.sleep(DELAY); 
         }
         showFinalScreen();
     }
