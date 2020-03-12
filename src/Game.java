@@ -7,7 +7,7 @@ import enigma.console.TextAttributes;
 import java.awt.Color;
 
 class Game {
-    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 60, 30, 18, 3);
+    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 60, 30, 18, 0);
     public TextAttributes attr;
     public int OFFSET_X = 0;
     public int OFFSET_Y = 0;
@@ -94,8 +94,6 @@ class Game {
         System.out.println("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|");
         System.out.println("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ");
         System.out.println(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ");
-        System.out.println();
-        System.out.println("Final Score: "+SCORE);
     }
 
     void play() throws InterruptedException {
@@ -114,6 +112,8 @@ class Game {
             cn.getTextWindow().output(b.getBoard()[py][px], attr);
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
             cn.getTextWindow().output("Time:"+Integer.toString(TIME) + " ");
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 1 + OFFSET_Y);
+            cn.getTextWindow().output("Score:"+Integer.toString(SCORE) + "   ");
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
             cn.getTextWindow().output("Mode:"+MODE + "   ");
             
