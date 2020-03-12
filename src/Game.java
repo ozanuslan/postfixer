@@ -71,6 +71,21 @@ class Game {
         SCORE = 0;
     }
 
+    void displayInputQueue(int px, int py){
+        Queue inputQueue = b.getInputQueue();
+        String symbol;
+        cn.getTextWindow().setCursorPosition(px, py-1);
+        cn.getTextWindow().output("<<<<<<<<", attr);
+        cn.getTextWindow().setCursorPosition(px, py+1);
+        cn.getTextWindow().output("<<<<<<<<", attr);
+        cn.getTextWindow().setCursorPosition(px, py);
+        while(!inputQueue.isEmpty()){
+            symbol = (String)inputQueue.dequeue();
+            System.out.print(symbol);
+        }
+        System.out.println();
+    }
+
     void showFinalScreen(){
         cn.getTextWindow().setCursorPosition(0,18 + OFFSET_Y);
         System.out.println(" _____                        _____                ");
@@ -84,31 +99,33 @@ class Game {
     }
 
     void play() throws InterruptedException {
-        int timeDecreaseLimit = 1000;
-        int timeDecreaseCounter = 0;
+        int timeDecreaseLimit = 1000; // A second in miliseconds
+        int timeDelayCounter = 0; // A counter for counting miliseconds
         while (TIME > 0) {
-            if (timeDecreaseCounter >= timeDecreaseLimit) {
-                timeDecreaseCounter = 0;
+            if (timeDelayCounter >= timeDecreaseLimit) {
+                timeDelayCounter = 0;
                 TIME--;
             }
 
+            displayInputQueue(12+OFFSET_X, 5+OFFSET_Y);
             cn.getTextWindow().setCursorPosition(0, 0);
             b.displayBoard();
             cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
             cn.getTextWindow().output(b.getBoard()[py][px], attr);
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
-            cn.getTextWindow().output(Integer.toString(TIME) + " ");
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 3 + OFFSET_Y);
-            cn.getTextWindow().output(MODE + "   ");
+            cn.getTextWindow().output("Time:"+Integer.toString(TIME) + " ");
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
+            cn.getTextWindow().output("Mode:"+MODE + "   ");
+            
 
             if (keypr == 1) { // if keyboard button pressed
-                if (rkey == KeyEvent.VK_LEFT && px > 0)
+                if ((rkey == KeyEvent.VK_LEFT || rkey == 97 || rkey == 65) && px > 0)
                     px--;
-                if (rkey == KeyEvent.VK_RIGHT && px + 1 < b.getBoard()[py].length)
+                if ((rkey == KeyEvent.VK_RIGHT || rkey == 100 || rkey == 68) && px + 1 < b.getBoard()[py].length)
                     px++;
-                if (rkey == KeyEvent.VK_UP && py > 0)
+                if ((rkey == KeyEvent.VK_UP || rkey == 119 || rkey == 87) && py > 0)
                     py--;
-                if (rkey == KeyEvent.VK_DOWN && py + 1 < b.getBoard().length)
+                if ((rkey == KeyEvent.VK_DOWN || rkey == 115 || rkey == 83) && py + 1 < b.getBoard().length)
                     py++;
                 if (rkey == 116 || rkey == 84) { // If the key pressed is T
                     MODE = "Take";
@@ -124,7 +141,7 @@ class Game {
 
             Thread.sleep(DELAY);
             if (MODE.equalsIgnoreCase("Take")) {
-                timeDecreaseCounter += DELAY;
+                timeDelayCounter += DELAY;
             }
         }
         showFinalScreen();
