@@ -3,7 +3,8 @@ import java.util.Random;
 class Board {
     private String[][] BOARD;
     private String[] SYMBOLS = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "*", "/" };
-    private Queue INPUTQUEUE;
+    private Queue SOURCEINPUTQUEUE;
+    private Queue MAININPUTQUEUE;
     private int inputQueueSize;
     private Random rnd;
     private int startingSymbolCount;
@@ -12,9 +13,10 @@ class Board {
         inputQueueSize = 200;
         startingSymbolCount = 40;
         BOARD = new String[10][10];
-        INPUTQUEUE = new Queue(inputQueueSize);
+        SOURCEINPUTQUEUE = new Queue(inputQueueSize);
+        MAININPUTQUEUE = new Queue(inputQueueSize);
         rnd = new Random();
-        fillInputQueueRandomly();
+        fillSourceInputQueueRandomly();
         clearBoard();
         fillBoardRandomly(startingSymbolCount);
     }
@@ -23,15 +25,38 @@ class Board {
         return BOARD;
     }
 
-    public Queue getInputQueue(){
-        return INPUTQUEUE;
+    public Queue getInputQueue() {
+        return MAININPUTQUEUE;
     }
 
-    void fillInputQueueRandomly(){
+    void pushFromQueueToBoard() {
+        int neededSymbolCount = startingSymbolCount - countSymbolsOnBoard();
+        fillBoardRandomly(neededSymbolCount); 
+    }
+
+    int countSymbolsOnBoard() {
+        int symbolCount = 0;
+        for (String[] row : BOARD) {
+            for (String col : row) {
+                if (!col.equals("\\.")) {
+                    symbolCount++;
+                }
+            }
+        }
+        return symbolCount;
+    }
+
+    void fillMainInputQueue() {
+        while (MAININPUTQUEUE.size() < 8) {
+            MAININPUTQUEUE.enqueue(SOURCEINPUTQUEUE.dequeue());
+        }
+    }
+
+    void fillSourceInputQueueRandomly() {
         int rndNum;
-        for(int i = 0; i < inputQueueSize; i++){
+        for (int i = 0; i < inputQueueSize; i++) {
             rndNum = rnd.nextInt(SYMBOLS.length);
-            INPUTQUEUE.enqueue(SYMBOLS[rndNum]);
+            SOURCEINPUTQUEUE.enqueue(SYMBOLS[rndNum]);
         }
     }
 
@@ -50,25 +75,29 @@ class Board {
         boolean cannotPlaceSymbol;
 
         for (int i = 0; i < symbolCount; i++) {
-            randomSymbol = (String)INPUTQUEUE.dequeue();
+            fillMainInputQueue();
+            randomSymbol = (String) MAININPUTQUEUE.dequeue();
             cannotPlaceSymbol = true;
 
             while (cannotPlaceSymbol) {
                 randomRowIndex = rnd.nextInt(BOARD.length);
                 randomColIndex = rnd.nextInt(BOARD[randomRowIndex].length);
 
-                if (BOARD[randomRowIndex][randomColIndex].contains(".")) { //Tried using equals to see if there exists a dot on the boards specified index but it does not work
+                if (BOARD[randomRowIndex][randomColIndex].contains(".")) { // Tried using equals to see if there exists
+                                                                           // a dot on the boards specified index but it
+                                                                           // does not work
                     BOARD[randomRowIndex][randomColIndex] = randomSymbol;
                     cannotPlaceSymbol = false;
                 }
             }
         }
+        fillMainInputQueue();
     }
 
     void displayBoard() {
         for (int i = 0; i < BOARD.length; i++) {
             for (int j = 0; j < BOARD[i].length; j++) {
-                    System.out.print(BOARD[i][j]);
+                System.out.print(BOARD[i][j]);
             }
             System.out.println();
         }
