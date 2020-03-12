@@ -8,13 +8,15 @@ class Board {
     private int inputQueueSize;
     private Random rnd;
     private int startingSymbolCount;
+    private String[] DISPLAYQUEUE;
 
     public Board() {
-        inputQueueSize = 200;
+        inputQueueSize = 10000;
         startingSymbolCount = 40;
         BOARD = new String[10][10];
         SOURCEINPUTQUEUE = new Queue(inputQueueSize);
         MAININPUTQUEUE = new Queue(inputQueueSize);
+        DISPLAYQUEUE = new String[8];
         rnd = new Random();
         fillSourceInputQueueRandomly();
         clearBoard();
@@ -27,6 +29,29 @@ class Board {
 
     public Queue getInputQueue() {
         return MAININPUTQUEUE;
+    }
+
+    void displayInputQueue(){
+        for(int i = 0; i < DISPLAYQUEUE.length; i++){
+            System.out.print(DISPLAYQUEUE[i]);
+        }
+        System.out.println();
+    }
+
+    void updateDisplayQueue(){
+        String temp;
+        for(int i = 0; i < 8; i++){
+            temp = (String)MAININPUTQUEUE.dequeue();
+            DISPLAYQUEUE[i] = temp;
+            MAININPUTQUEUE.enqueue(temp);
+        }
+    }
+
+    String removeSymbolFromBoard(int px, int py){
+        String returnSymbol;
+        returnSymbol = BOARD[py][px];
+        BOARD[py][px] = ".";
+        return returnSymbol;
     }
 
     void pushFromQueueToBoard() {
