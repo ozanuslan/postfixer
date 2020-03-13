@@ -63,7 +63,7 @@ class Board {
         int symbolCount = 0;
         for (String[] row : BOARD) {
             for (String col : row) {
-                if (!col.equals("\\.")) {
+                if (!col.contains(".")) {
                     symbolCount++;
                 }
             }

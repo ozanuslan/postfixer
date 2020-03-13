@@ -31,7 +31,6 @@ class Game {
     private int timeDelayCounter = 0; // A counter for counting miliseconds
     private Queue takeQueue;
     private boolean evaluationComplete;
-    private int takenSymbolCount;
 
     Game() throws Exception { // --- Contructor
         inputSetup();
@@ -43,7 +42,6 @@ class Game {
         MODE = "Free";
         SCORE = 0;
         takeQueue = new Queue(500);
-        takenSymbolCount = 0;
     }
 
     void inputSetup() {
@@ -175,7 +173,6 @@ class Game {
     void takeSymbol() {
         if (!b.getBoard()[py][px].contains(".")) {
             takeQueue.enqueue(b.removeSymbolFromBoard(px, py));
-            takenSymbolCount++;
         }
     }
 
@@ -198,9 +195,8 @@ class Game {
             takeKeyPress();
             Thread.sleep(DELAY);
             if (MODE.equalsIgnoreCase("Evaluation")) {
-                b.fillBoardRandomly(takenSymbolCount);
+                b.pushFromQueueToBoard();
                 b.updateDisplayQueue();
-                takenSymbolCount = 0;
                 evaluation();
             }
         }
