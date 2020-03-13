@@ -7,7 +7,7 @@ import enigma.console.TextAttributes;
 import java.awt.Color;
 
 class Game {
-    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 60, 30, 18, 0);
+    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 64, 30, 24, 0);
     public TextAttributes attr;
     public int OFFSET_X = 0;
     public int OFFSET_Y = 0;
@@ -30,6 +30,7 @@ class Game {
     private int timeDecreaseLimit = 1000; // A second in miliseconds
     private int timeDelayCounter = 0; // A counter for counting miliseconds
     private Queue takeQueue;
+    private String[] DISPLAYTAKEQUEUE;
     private boolean evaluationComplete;
 
     Game() throws Exception { // --- Contructor
@@ -41,7 +42,8 @@ class Game {
         TIME = 60;
         MODE = "Free";
         SCORE = 0;
-        takeQueue = new Queue(500);
+        takeQueue = new Queue(10000);
+        DISPLAYTAKEQUEUE = new String[40];
     }
 
     void inputSetup() {
@@ -101,15 +103,22 @@ class Game {
     }
 
     void displayTakeQueue(int px, int py) {
-        Queue tempQueue = takeQueue;
-        String symbol;
-        cn.getTextWindow().setCursorPosition(px, py);
+        cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
         System.out.print("Take Queue: ");
-        while (!tempQueue.isEmpty()) {
-            symbol = (String) tempQueue.dequeue();
-            System.out.print(symbol);
+        for(int i = 0; i < takeQueue.size(); i++){
+            System.out.print(DISPLAYTAKEQUEUE[i]);    
         }
         System.out.println();
+    }
+
+    void updateDisplayQueue(){
+        String temp;
+        int size = takeQueue.size();
+        for(int i = 0; i < size; i++){
+            temp = (String)takeQueue.dequeue();
+            DISPLAYTAKEQUEUE[i] = temp;
+            takeQueue.enqueue(temp);
+        }
     }
 
     void displayGameScreen() {
@@ -128,7 +137,7 @@ class Game {
             displayTakeQueue(12 + OFFSET_X, 8 + OFFSET_Y);
         } else {
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 8 + OFFSET_Y);
-            System.out.println("                                                ");
+            System.out.println("                                                    ");
         }
     }
 
@@ -145,6 +154,10 @@ class Game {
             if (rkey == 116 || rkey == 84) { // If the key pressed is T
                 if (MODE.equalsIgnoreCase("Free")) {
                     MODE = "Take";
+                }
+                //DELETE THIS CONDITION LATER !!!!!!!!!!!
+                if(MODE.equalsIgnoreCase("Take")){
+                    takeSymbol();
                 }
             }
             if (rkey == 102 || rkey == 70) { // If the key pressed is F
@@ -173,6 +186,7 @@ class Game {
     void takeSymbol() {
         if (!b.getBoard()[py][px].contains(".")) {
             takeQueue.enqueue(b.removeSymbolFromBoard(px, py));
+            updateDisplayQueue();
         }
     }
 
