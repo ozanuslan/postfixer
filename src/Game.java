@@ -31,9 +31,9 @@ class Game {
     private int timeDelayCounter = 0; // A counter for counting miliseconds
     private Queue EXPRESSIONQUEUE;
     private String[] EXPRESSIONQUEUEDISPLAY;
-    private Queue EVALUATIONQUEUE;
-    private String[] EVALUATIONQUEUEDISPLAY;
     private boolean evaluationComplete;
+    private Stack EVALUATIONSTACK;
+    private String[] EVALUATIONSTACKDISPLAY;
 
     Game() throws Exception { // --- Contructor
         inputSetup();
@@ -45,9 +45,10 @@ class Game {
         MODE = "Free";
         SCORE = 0;
         EXPRESSIONQUEUE = new Queue(10000);
-        EVALUATIONQUEUE = new Queue(10000);
         EXPRESSIONQUEUEDISPLAY = new String[40];
-        EVALUATIONQUEUEDISPLAY = new String[40];
+        EVALUATIONSTACK = new Stack(40);
+        EVALUATIONSTACKDISPLAY = new String[40];
+        emptyEvaluationStackDisplay();
     }
 
     void inputSetup() {
@@ -112,7 +113,7 @@ class Game {
         for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
             System.out.print(EXPRESSIONQUEUEDISPLAY[i] + " ");
         }
-        System.out.println();
+        System.out.println("                   ");
     }
 
     void updateExpressionQueueDisplay() {
@@ -128,16 +129,55 @@ class Game {
         }
     }
 
-    void updateEvaluationQueueDisplay(){
-        String temp;
-        int size = EVALUATIONQUEUE.size();
-        for (int i = 0; i < EVALUATIONQUEUEDISPLAY.length; i++) {
-            EVALUATIONQUEUEDISPLAY[i] = " ";
+    void emptyExpressionQueue(){
+        while(!EXPRESSIONQUEUE.isEmpty()){
+            EXPRESSIONQUEUE.dequeue();
         }
-        for (int i = 0; i < size; i++) {
-            temp = (String) EVALUATIONQUEUE.dequeue();
-            EVALUATIONQUEUEDISPLAY[i] = temp;
-            EVALUATIONQUEUE.enqueue(temp);
+    }
+
+    void emptyEvaluationStack(){
+        while(!EVALUATIONSTACK.isEmpty()){
+            EVALUATIONSTACK.pop();
+        }
+    }
+
+    void emptyEvaluationStackDisplay() {
+        for (int i = 0; i < EVALUATIONSTACKDISPLAY.length; i++) {
+            EVALUATIONSTACKDISPLAY[i] = "         ";
+        }
+    }
+
+    void updateEvaluationStackDisplay() {
+        String element;
+        int stackSize = EVALUATIONSTACK.size();
+
+        if (stackSize >= 1) {
+            for (int i = stackSize-1; i < EVALUATIONSTACKDISPLAY.length; i++) {
+                EVALUATIONSTACKDISPLAY[i] = "         ";
+            }
+            for (int i = stackSize - 1; i < stackSize; i++) {
+                element = (String) EVALUATIONSTACK.pop();
+                EVALUATIONSTACKDISPLAY[i] = element;
+                EVALUATIONSTACK.push(element);
+            }
+        }
+    }
+
+    void displayStack() {
+
+        int lastIndex = 9;
+        for (int i = 0; i < 8; i++) {
+            cn.getTextWindow().setCursorPosition(29 + OFFSET_X, 1 + OFFSET_Y + i);
+            System.out.println("|         |");
+            lastIndex = i;
+        }
+        cn.getTextWindow().setCursorPosition(29 + OFFSET_X, 1 + OFFSET_Y + lastIndex);
+        System.out.println("+---------+");
+
+        for (int i = 0; i < EVALUATIONSTACKDISPLAY.length; i++) {
+            lastIndex--;
+            cn.getTextWindow().setCursorPosition(30 + OFFSET_X, 1 + OFFSET_Y + lastIndex);
+            System.out.println(EVALUATIONSTACKDISPLAY[i]);
         }
     }
 
@@ -160,6 +200,7 @@ class Game {
             System.out.println(
                     "                                                                                                   ");
         }
+        displayStack();
     }
 
     void takeKeyPress() {
@@ -200,7 +241,7 @@ class Game {
             }
             if (rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")) {
                 // progress the stack evaluation
-                evaluationComplete = true; // PROP DELETE LATER !!!!!!!!
+                progressExpressionEvaluation();
             }
             keypr = 0; // last action
         }
@@ -340,13 +381,16 @@ class Game {
         if (counter != 1) {
             isValid = false;
         }
+        if (EXPRESSIONQUEUE.size() == 1) {
+            isValid = false;
+        }
         return isValid;
     }
 
     void evaluateExpression() {
         if (isValidExpression()) {
             int scoreFactor = 0;
-            boolean lastElementType = false; // True for numbers False for operators
+            boolean lastElementType = true; // True for numbers False for operators
             for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
                 if (tryParseInt(EXPRESSIONQUEUEDISPLAY[i])) { // If number
                     if (EXPRESSIONQUEUEDISPLAY[i].length() > 1) {
@@ -372,7 +416,41 @@ class Game {
             SCORE += scoreFactor;
         } else {
             SCORE -= 20;
+            evaluationComplete = true;
         }
+    }
+
+    void progressExpressionEvaluation() {
+        String element;
+        element = (String) EXPRESSIONQUEUE.dequeue();
+        int firstNumber;
+        int secondNumber;
+        int result = 0;
+        if (tryParseInt(element)) {
+            EVALUATIONSTACK.push(element);
+        } else {
+            firstNumber = Integer.parseInt((String) EVALUATIONSTACK.pop());
+            secondNumber = Integer.parseInt((String) EVALUATIONSTACK.pop());
+            if (element.contains("+")) {
+                result = firstNumber + secondNumber;
+            } else if (element.contains("-")) {
+                result = secondNumber - firstNumber;
+            } else if (element.contains("*")) {
+                result = firstNumber * secondNumber;
+            } else if (element.contains("/")) {
+                if(firstNumber == 0){
+                    result = 0;
+                } else{
+                    result = secondNumber / firstNumber;
+                }
+            }
+            EVALUATIONSTACK.push(Integer.toString(result));
+            if (EXPRESSIONQUEUE.isEmpty()) {
+                evaluationComplete = true;
+            }
+        }
+        updateExpressionQueueDisplay();
+        updateEvaluationStackDisplay();
     }
 
     void evaluation() throws InterruptedException {
@@ -383,6 +461,12 @@ class Game {
             takeKeyPress();
             Thread.sleep(DELAY);
         }
+        displayGameScreen();
+        Thread.sleep(1000);
+        emptyExpressionQueue();
+        updateExpressionQueueDisplay();
+        emptyEvaluationStack();
+        emptyEvaluationStackDisplay();
         MODE = "Free";
         free();
     }
@@ -400,7 +484,7 @@ class Game {
                 evaluation();
             }
         }
-        showFinalScreen();
+        evaluation();
     }
 
     void free() throws InterruptedException {
