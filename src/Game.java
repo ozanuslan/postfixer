@@ -7,7 +7,7 @@ import enigma.console.TextAttributes;
 import java.awt.Color;
 
 class Game {
-    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 80, 20, 24, 0);
+    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 85, 20, 24, 0);
     public TextAttributes attr;
     public int OFFSET_X = 0;
     public int OFFSET_Y = 0;
@@ -29,21 +29,25 @@ class Game {
     private Board b;
     private int timeDecreaseLimit = 1000; // A second in miliseconds
     private int timeDelayCounter = 0; // A counter for counting miliseconds
-    private Queue takeQueue;
-    private String[] DISPLAYTAKEQUEUE;
+    private Queue EXPRESSIONQUEUE;
+    private String[] EXPRESSIONQUEUEDISPLAY;
+    private Queue EVALUATIONQUEUE;
+    private String[] EVALUATIONQUEUEDISPLAY;
     private boolean evaluationComplete;
 
     Game() throws Exception { // --- Contructor
         inputSetup();
         attr = new TextAttributes(c.BLACK, c.GREEN);
         b = new Board();
-        b.updateDisplayQueue();
+        b.updateInputQueueDisplay();
         DELAY = 20;
         TIME = 60;
         MODE = "Free";
         SCORE = 0;
-        takeQueue = new Queue(10000);
-        DISPLAYTAKEQUEUE = new String[40];
+        EXPRESSIONQUEUE = new Queue(10000);
+        EVALUATIONQUEUE = new Queue(10000);
+        EXPRESSIONQUEUEDISPLAY = new String[40];
+        EVALUATIONQUEUEDISPLAY = new String[40];
     }
 
     void inputSetup() {
@@ -102,22 +106,38 @@ class Game {
         System.out.println(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ");
     }
 
-    void displayTakeQueue(int px, int py) {
+    void displayExpressionQueue(int px, int py) {
         cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
-        System.out.print("Take Queue: ");
-        for (int i = 0; i < takeQueue.size(); i++) {
-            System.out.print(DISPLAYTAKEQUEUE[i] + " ");
+        System.out.print("Expression: ");
+        for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
+            System.out.print(EXPRESSIONQUEUEDISPLAY[i] + " ");
         }
         System.out.println();
     }
 
-    void updateDisplayQueue() {
+    void updateExpressionQueueDisplay() {
         String temp;
-        int size = takeQueue.size();
+        int size = EXPRESSIONQUEUE.size();
+        for (int i = 0; i < EXPRESSIONQUEUEDISPLAY.length; i++) {
+            EXPRESSIONQUEUEDISPLAY[i] = " ";
+        }
         for (int i = 0; i < size; i++) {
-            temp = (String) takeQueue.dequeue();
-            DISPLAYTAKEQUEUE[i] = temp;
-            takeQueue.enqueue(temp);
+            temp = (String) EXPRESSIONQUEUE.dequeue();
+            EXPRESSIONQUEUEDISPLAY[i] = temp;
+            EXPRESSIONQUEUE.enqueue(temp);
+        }
+    }
+
+    void updateEvaluationQueueDisplay(){
+        String temp;
+        int size = EVALUATIONQUEUE.size();
+        for (int i = 0; i < EVALUATIONQUEUEDISPLAY.length; i++) {
+            EVALUATIONQUEUEDISPLAY[i] = " ";
+        }
+        for (int i = 0; i < size; i++) {
+            temp = (String) EVALUATIONQUEUE.dequeue();
+            EVALUATIONQUEUEDISPLAY[i] = temp;
+            EVALUATIONQUEUE.enqueue(temp);
         }
     }
 
@@ -133,11 +153,12 @@ class Game {
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
         cn.getTextWindow().output("Mode:" + MODE + "                     ");
         displayInputQueue(12 + OFFSET_X, 5 + OFFSET_Y);
-        if (MODE.equalsIgnoreCase("Take")) {
-            displayTakeQueue(12 + OFFSET_X, 9 + OFFSET_Y);
+        if (MODE.equalsIgnoreCase("Take") || MODE.equalsIgnoreCase("Evaluation")) {
+            displayExpressionQueue(0 + OFFSET_X, 10 + OFFSET_Y);
         } else {
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
-            System.out.println("                                                                                                   ");
+            cn.getTextWindow().setCursorPosition(0 + OFFSET_X, 10 + OFFSET_Y);
+            System.out.println(
+                    "                                                                                                   ");
         }
     }
 
@@ -201,8 +222,8 @@ class Game {
 
     void takeSymbol() {
         if (!b.getBoard()[py][px].contains(".")) {
-            takeQueue.enqueue(b.removeSymbolFromBoard(px, py));
-            updateDisplayQueue();
+            EXPRESSIONQUEUE.enqueue(b.removeSymbolFromBoard(px, py));
+            updateExpressionQueueDisplay();
         }
     }
 
@@ -227,12 +248,13 @@ class Game {
         tempx += dirx;
         tempy += diry;
         while (tempy >= 0 && tempy < b.getBoard().length && tempx >= 0 && tempx < b.getBoard()[tempy].length) { // Coordinates
-                                                                                                              // in the
-                                                                                                              // board
-                                                                                                              // limits
+                                                                                                                // in
+                                                                                                                // the
+                                                                                                                // board
+                                                                                                                // limits
 
             if (b.getBoard()[tempy][tempx].contains("+") || b.getBoard()[tempy][tempx].contains("-")
-            || b.getBoard()[tempy][tempx].contains("*") || b.getBoard()[tempy][tempx].contains("/")) {
+                    || b.getBoard()[tempy][tempx].contains("*") || b.getBoard()[tempy][tempx].contains("/")) {
                 hasSymAhead = true;
                 break;
             }
@@ -249,9 +271,10 @@ class Game {
         tempx += dirx;
         tempy += diry;
         while (tempy >= 0 && tempy < b.getBoard().length && tempx >= 0 && tempx < b.getBoard()[tempy].length) { // Coordinates
-                                                                                                              // in the
-                                                                                                              // board
-                                                                                                              // limits
+                                                                                                                // in
+                                                                                                                // the
+                                                                                                                // board
+                                                                                                                // limits
 
             if (tryParseInt(b.getBoard()[tempy][tempx])) {
                 hasNumAhead = true;
@@ -267,7 +290,8 @@ class Game {
         String combinedNumber;
         while (py >= 0 && py < b.getBoard().length && px >= 0 && px < b.getBoard()[py].length) {
             combinedNumber = "";
-            if (hasNumberAhead(dirx, diry) || hasOperatorAhead(dirx, diry) || tryParseInt(b.getBoard()[py][px]) || containsOperator()) {
+            if (hasNumberAhead(dirx, diry) || hasOperatorAhead(dirx, diry) || tryParseInt(b.getBoard()[py][px])
+                    || containsOperator()) {
                 if (containsOperator()) {
                     takeSymbol();
                     break;
@@ -288,22 +312,76 @@ class Game {
                             break;
                         }
                     }
-                    takeQueue.enqueue(combinedNumber);
+                    EXPRESSIONQUEUE.enqueue(combinedNumber);
                 }
-                if(!hasNumberAhead(dirx, diry)){
+                if (!hasNumberAhead(dirx, diry)) {
                     break;
                 }
-                
+
             } else {
                 takeSymbol();
                 break;
             }
         }
-        updateDisplayQueue();
+        updateExpressionQueueDisplay();
+    }
+
+    boolean isValidExpression() {
+        boolean isValid = true;
+        int counter = 0;
+        for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
+            if (tryParseInt(EXPRESSIONQUEUEDISPLAY[i])) { // If the elements is a number
+                counter++;
+            } else { // If element is an operator
+                counter -= 2;
+                if (counter < 0) {
+                    isValid = false;
+                    break;
+                }
+                counter++;
+            }
+        }
+        if (counter != 1) {
+            isValid = false;
+        }
+        return isValid;
+    }
+
+    void evaluateExpression() {
+        if (isValidExpression()) {
+            int scoreFactor = 0;
+            boolean lastElementType = false; // True for numbers False for operators
+            for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
+                if (tryParseInt(EXPRESSIONQUEUEDISPLAY[i])) { // If number
+                    if (EXPRESSIONQUEUEDISPLAY[i].length() > 1) {
+                        scoreFactor += EXPRESSIONQUEUEDISPLAY[i].length() * 2;
+                    } else {
+                        if (lastElementType) {
+                            scoreFactor += 1;
+                        } else {
+                            scoreFactor += 2;
+                        }
+                    }
+                    lastElementType = true;
+                } else { // If operator
+                    if (!lastElementType) {
+                        scoreFactor += 1;
+                    } else {
+                        scoreFactor += 2;
+                    }
+                    lastElementType = false;
+                }
+            }
+            scoreFactor *= scoreFactor;
+            SCORE += scoreFactor;
+        } else {
+            SCORE -= 20;
+        }
     }
 
     void evaluation() throws InterruptedException {
         evaluationComplete = false;
+        evaluateExpression();
         while (!evaluationComplete) {
             displayGameScreen();
             takeKeyPress();
@@ -322,7 +400,7 @@ class Game {
             Thread.sleep(DELAY);
             if (MODE.equalsIgnoreCase("Evaluation")) {
                 b.pushFromQueueToBoard();
-                b.updateDisplayQueue();
+                b.updateInputQueueDisplay();
                 evaluation();
             }
         }
