@@ -27,10 +27,6 @@ class Board {
         return BOARD;
     }
 
-    public Queue getInputQueue() {
-        return MAININPUTQUEUE;
-    }
-
     void displayInputQueue(){
         for(int i = 0; i < DISPLAYQUEUE.length; i++){
             System.out.print(DISPLAYQUEUE[i]);
@@ -38,7 +34,7 @@ class Board {
         System.out.println();
     }
 
-    void updateDisplayQueue(){
+    void updateInputQueueDisplay(){
         String temp;
         for(int i = 0; i < 8; i++){
             temp = (String)MAININPUTQUEUE.dequeue();
