@@ -192,10 +192,6 @@ class Game {
                 if (MODE.equalsIgnoreCase("Free")) {
                     MODE = "Take";
                 }
-                // DELETE THIS CONDITION LATER !!!!!!!!!!!
-                if (MODE.equalsIgnoreCase("Take")) {
-                    takeSymbol();
-                }
             }
             if (rkey == 102 || rkey == 70) { // If the key pressed is F
                 if (MODE.equalsIgnoreCase("Take")) {
