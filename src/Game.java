@@ -7,7 +7,7 @@ import enigma.console.TextAttributes;
 import java.awt.Color;
 
 class Game {
-    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 64, 30, 24, 0);
+    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 80, 20, 24, 0);
     public TextAttributes attr;
     public int OFFSET_X = 0;
     public int OFFSET_Y = 0;
@@ -105,17 +105,17 @@ class Game {
     void displayTakeQueue(int px, int py) {
         cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
         System.out.print("Take Queue: ");
-        for(int i = 0; i < takeQueue.size(); i++){
-            System.out.print(DISPLAYTAKEQUEUE[i]);    
+        for (int i = 0; i < takeQueue.size(); i++) {
+            System.out.print(DISPLAYTAKEQUEUE[i] + " ");
         }
         System.out.println();
     }
 
-    void updateDisplayQueue(){
+    void updateDisplayQueue() {
         String temp;
         int size = takeQueue.size();
-        for(int i = 0; i < size; i++){
-            temp = (String)takeQueue.dequeue();
+        for (int i = 0; i < size; i++) {
+            temp = (String) takeQueue.dequeue();
             DISPLAYTAKEQUEUE[i] = temp;
             takeQueue.enqueue(temp);
         }
@@ -134,29 +134,45 @@ class Game {
         cn.getTextWindow().output("Mode:" + MODE + "                     ");
         displayInputQueue(12 + OFFSET_X, 5 + OFFSET_Y);
         if (MODE.equalsIgnoreCase("Take")) {
-            displayTakeQueue(12 + OFFSET_X, 8 + OFFSET_Y);
+            displayTakeQueue(12 + OFFSET_X, 9 + OFFSET_Y);
         } else {
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 8 + OFFSET_Y);
-            System.out.println("                                                    ");
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
+            System.out.println("                                                                                                   ");
         }
     }
 
     void takeKeyPress() {
         if (keypr == 1) { // if keyboard button pressed
             if ((rkey == KeyEvent.VK_LEFT || rkey == 97 || rkey == 65) && px > 0)
-                px--;
+                if (MODE.equalsIgnoreCase("Free")) {
+                    px--;
+                } else if (MODE.equalsIgnoreCase("Take")) {
+                    move(-1, 0);
+                }
             if ((rkey == KeyEvent.VK_RIGHT || rkey == 100 || rkey == 68) && px + 1 < b.getBoard()[py].length)
-                px++;
+                if (MODE.equalsIgnoreCase("Free")) {
+                    px++;
+                } else if (MODE.equalsIgnoreCase("Take")) {
+                    move(1, 0);
+                }
             if ((rkey == KeyEvent.VK_UP || rkey == 119 || rkey == 87) && py > 0)
-                py--;
+                if (MODE.equalsIgnoreCase("Free")) {
+                    py--;
+                } else if (MODE.equalsIgnoreCase("Take")) {
+                    move(0, -1);
+                }
             if ((rkey == KeyEvent.VK_DOWN || rkey == 115 || rkey == 83) && py + 1 < b.getBoard().length)
-                py++;
+                if (MODE.equalsIgnoreCase("Free")) {
+                    py++;
+                } else if (MODE.equalsIgnoreCase("Take")) {
+                    move(0, 1);
+                }
             if (rkey == 116 || rkey == 84) { // If the key pressed is T
                 if (MODE.equalsIgnoreCase("Free")) {
                     MODE = "Take";
                 }
-                //DELETE THIS CONDITION LATER !!!!!!!!!!!
-                if(MODE.equalsIgnoreCase("Take")){
+                // DELETE THIS CONDITION LATER !!!!!!!!!!!
+                if (MODE.equalsIgnoreCase("Take")) {
                     takeSymbol();
                 }
             }
@@ -190,6 +206,102 @@ class Game {
         }
     }
 
+    boolean tryParseInt(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    boolean containsOperator() {
+        return b.getBoard()[py][px].contains("+") || b.getBoard()[py][px].contains("-")
+                || b.getBoard()[py][px].contains("*") || b.getBoard()[py][px].contains("/");
+    }
+
+    boolean hasOperatorAhead(int dirx, int diry) {
+        boolean hasSymAhead = false;
+        int tempx = px;
+        int tempy = py;
+        tempx += dirx;
+        tempy += diry;
+        while (tempy >= 0 && tempy < b.getBoard().length && tempx >= 0 && tempx < b.getBoard()[tempy].length) { // Coordinates
+                                                                                                              // in the
+                                                                                                              // board
+                                                                                                              // limits
+
+            if (b.getBoard()[tempy][tempx].contains("+") || b.getBoard()[tempy][tempx].contains("-")
+            || b.getBoard()[tempy][tempx].contains("*") || b.getBoard()[tempy][tempx].contains("/")) {
+                hasSymAhead = true;
+                break;
+            }
+            tempx += dirx;
+            tempy += diry;
+        }
+        return hasSymAhead;
+    }
+
+    boolean hasNumberAhead(int dirx, int diry) {
+        boolean hasNumAhead = false;
+        int tempx = px;
+        int tempy = py;
+        tempx += dirx;
+        tempy += diry;
+        while (tempy >= 0 && tempy < b.getBoard().length && tempx >= 0 && tempx < b.getBoard()[tempy].length) { // Coordinates
+                                                                                                              // in the
+                                                                                                              // board
+                                                                                                              // limits
+
+            if (tryParseInt(b.getBoard()[tempy][tempx])) {
+                hasNumAhead = true;
+                break;
+            }
+            tempx += dirx;
+            tempy += diry;
+        }
+        return hasNumAhead;
+    }
+
+    void move(int dirx, int diry) {
+        String combinedNumber;
+        while (py >= 0 && py < b.getBoard().length && px >= 0 && px < b.getBoard()[py].length) {
+            combinedNumber = "";
+            if (hasNumberAhead(dirx, diry) || hasOperatorAhead(dirx, diry) || tryParseInt(b.getBoard()[py][px]) || containsOperator()) {
+                if (containsOperator()) {
+                    takeSymbol();
+                    break;
+                }
+                if (b.getBoard()[py][px].contains(".")) {
+                    px += dirx;
+                    py += diry;
+                    continue;
+                }
+                if (tryParseInt(b.getBoard()[py][px])) {
+                    combinedNumber += b.removeSymbolFromBoard(px, py);
+                    while (hasNumberAhead(dirx, diry)) {
+                        py += diry;
+                        px += dirx;
+                        if (tryParseInt(b.getBoard()[py][px])) {
+                            combinedNumber += b.removeSymbolFromBoard(px, py);
+                        } else {
+                            break;
+                        }
+                    }
+                    takeQueue.enqueue(combinedNumber);
+                }
+                if(!hasNumberAhead(dirx, diry)){
+                    break;
+                }
+                
+            } else {
+                takeSymbol();
+                break;
+            }
+        }
+        updateDisplayQueue();
+    }
+
     void evaluation() throws InterruptedException {
         evaluationComplete = false;
         while (!evaluationComplete) {
@@ -214,6 +326,7 @@ class Game {
                 evaluation();
             }
         }
+        showFinalScreen();
     }
 
     void free() throws InterruptedException {
