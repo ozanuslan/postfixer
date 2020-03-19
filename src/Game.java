@@ -47,7 +47,7 @@ class Game {
         b = new Board();
         b.updateInputQueueDisplay();
         DELAY = 20;
-        TIME = 6;
+        TIME = 60;
         MODE = "Free";
         SCORE = 0;
         EXPRESSIONQUEUE = new Queue(10000);
