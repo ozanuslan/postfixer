@@ -5,15 +5,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import enigma.console.TextAttributes;
 import java.awt.Color;
+import java.util.Scanner;
 
 class Game {
     public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 85, 20, 24, 0);
     public TextAttributes attr;
+    public TextAttributes redonblack;
+    public TextAttributes greenonblack;
     public int OFFSET_X = 0;
     public int OFFSET_Y = 0;
     public Color c;
     public TextMouseListener tmlis;
     public KeyListener klis;
+    public Scanner sc;
     // ------ Standard variables for mouse and keyboard ------
     public int mousepr; // mouse pressed?
     public int mousex, mousey; // mouse text coords.
@@ -38,10 +42,12 @@ class Game {
     Game() throws Exception { // --- Contructor
         inputSetup();
         attr = new TextAttributes(c.BLACK, c.GREEN);
+        redonblack = new TextAttributes(c.RED, c.BLACK);
+        greenonblack = new TextAttributes(c.GREEN, c.BLACK);
         b = new Board();
         b.updateInputQueueDisplay();
         DELAY = 20;
-        TIME = 60;
+        TIME = 6;
         MODE = "Free";
         SCORE = 0;
         EXPRESSIONQUEUE = new Queue(10000);
@@ -52,6 +58,7 @@ class Game {
     }
 
     void inputSetup() {
+        sc = new Scanner(System.in);
         // ------ Standard code for mouse and keyboard ------ Do not change
         tmlis = new TextMouseListener() {
             public void mouseClicked(TextMouseEvent arg0) {
@@ -98,13 +105,33 @@ class Game {
     }
 
     void showFinalScreen() {
-        cn.getTextWindow().setCursorPosition(0, 18 + OFFSET_Y);
-        System.out.println(" _____                        _____                ");
-        System.out.println("|  __ \\                      |  _  |               ");
-        System.out.println("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ");
-        System.out.println("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|");
-        System.out.println("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ");
-        System.out.println(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ");
+        cn.getTextWindow().setCursorPosition(0, 13 + OFFSET_Y);
+        if (SCORE > 0) {
+            cn.getTextWindow().output(" _____                        _____                ", greenonblack);
+            System.out.println();
+            cn.getTextWindow().output("|  __ \\                      |  _  |               ", greenonblack);
+            System.out.println();
+            cn.getTextWindow().output("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ", greenonblack);
+            System.out.println();
+            cn.getTextWindow().output("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|", greenonblack);
+            System.out.println();
+            cn.getTextWindow().output("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ", greenonblack);
+            System.out.println();
+            cn.getTextWindow().output(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ", greenonblack);
+        } else {
+            cn.getTextWindow().output(" _____                        _____                ", redonblack);
+            System.out.println();
+            cn.getTextWindow().output("|  __ \\                      |  _  |               ", redonblack);
+            System.out.println();
+            cn.getTextWindow().output("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ", redonblack);
+            System.out.println();
+            cn.getTextWindow().output("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|", redonblack);
+            System.out.println();
+            cn.getTextWindow().output("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ", redonblack);
+            System.out.println();
+            cn.getTextWindow().output(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ", redonblack);
+        }
+
     }
 
     void displayExpressionQueue(int px, int py) {
@@ -129,14 +156,14 @@ class Game {
         }
     }
 
-    void emptyExpressionQueue(){
-        while(!EXPRESSIONQUEUE.isEmpty()){
+    void emptyExpressionQueue() {
+        while (!EXPRESSIONQUEUE.isEmpty()) {
             EXPRESSIONQUEUE.dequeue();
         }
     }
 
-    void emptyEvaluationStack(){
-        while(!EVALUATIONSTACK.isEmpty()){
+    void emptyEvaluationStack() {
+        while (!EVALUATIONSTACK.isEmpty()) {
             EVALUATIONSTACK.pop();
         }
     }
@@ -152,7 +179,7 @@ class Game {
         int stackSize = EVALUATIONSTACK.size();
 
         if (stackSize >= 1) {
-            for (int i = stackSize-1; i < EVALUATIONSTACKDISPLAY.length; i++) {
+            for (int i = stackSize - 1; i < EVALUATIONSTACKDISPLAY.length; i++) {
                 EVALUATIONSTACKDISPLAY[i] = "         ";
             }
             for (int i = stackSize - 1; i < stackSize; i++) {
@@ -323,6 +350,15 @@ class Game {
         return hasNumAhead;
     }
 
+    boolean hasNeighborNumber(int dirx, int diry) {
+        if (py + diry >= 0 && py + diry < b.getBoard().length && px + dirx >= 0
+                && px + dirx < b.getBoard()[py].length) {
+            return tryParseInt(b.getBoard()[py + diry][px + dirx]);
+        } else {
+            return false;
+        }
+    }
+
     void move(int dirx, int diry) {
         String combinedNumber;
         while (py >= 0 && py < b.getBoard().length && px >= 0 && px < b.getBoard()[py].length) {
@@ -340,21 +376,14 @@ class Game {
                 }
                 if (tryParseInt(b.getBoard()[py][px])) {
                     combinedNumber += b.removeSymbolFromBoard(px, py);
-                    while (hasNumberAhead(dirx, diry)) {
+                    while (hasNeighborNumber(dirx, diry)) {
                         py += diry;
                         px += dirx;
-                        if (tryParseInt(b.getBoard()[py][px])) {
-                            combinedNumber += b.removeSymbolFromBoard(px, py);
-                        } else {
-                            break;
-                        }
+                        combinedNumber += b.removeSymbolFromBoard(px, py);
                     }
                     EXPRESSIONQUEUE.enqueue(combinedNumber);
-                }
-                if (!hasNumberAhead(dirx, diry)) {
                     break;
                 }
-
             } else {
                 takeSymbol();
                 break;
@@ -438,9 +467,9 @@ class Game {
             } else if (element.contains("*")) {
                 result = firstNumber * secondNumber;
             } else if (element.contains("/")) {
-                if(firstNumber == 0){
+                if (firstNumber == 0) {
                     result = 0;
-                } else{
+                } else {
                     result = secondNumber / firstNumber;
                 }
             }
@@ -484,6 +513,9 @@ class Game {
                 evaluation();
             }
         }
+        MODE = "Evaluation";
+        b.pushFromQueueToBoard();
+        b.updateInputQueueDisplay();
         evaluation();
     }
 
@@ -496,7 +528,10 @@ class Game {
                 take();
             }
         }
+        displayGameScreen();
         showFinalScreen();
+        sc.nextLine();
+        System.exit(0);
     }
 
     void play() throws InterruptedException {
