@@ -36,6 +36,9 @@ class Game {
     private Queue EXPRESSIONQUEUE;
     private String[] EXPRESSIONQUEUEDISPLAY;
     private boolean evaluationComplete;
+    private boolean isCorrectExpression;
+    private boolean hasDivisionByZero;
+    private int pointsWon;
     private Stack EVALUATIONSTACK;
     private String[] EVALUATIONSTACKDISPLAY;
 
@@ -54,6 +57,9 @@ class Game {
         EXPRESSIONQUEUEDISPLAY = new String[40];
         EVALUATIONSTACK = new Stack(40);
         EVALUATIONSTACKDISPLAY = new String[40];
+        evaluationComplete = false;
+        isCorrectExpression = false;
+        hasDivisionByZero = false;
         emptyEvaluationStackDisplay();
     }
 
@@ -143,6 +149,12 @@ class Game {
         System.out.println("                   ");
     }
 
+    void emptyExpressionQueue() {
+        while (!EXPRESSIONQUEUE.isEmpty()) {
+            EXPRESSIONQUEUE.dequeue();
+        }
+    }
+
     void updateExpressionQueueDisplay() {
         String temp;
         int size = EXPRESSIONQUEUE.size();
@@ -153,12 +165,6 @@ class Game {
             temp = (String) EXPRESSIONQUEUE.dequeue();
             EXPRESSIONQUEUEDISPLAY[i] = temp;
             EXPRESSIONQUEUE.enqueue(temp);
-        }
-    }
-
-    void emptyExpressionQueue() {
-        while (!EXPRESSIONQUEUE.isEmpty()) {
-            EXPRESSIONQUEUE.dequeue();
         }
     }
 
@@ -190,7 +196,7 @@ class Game {
         }
     }
 
-    void displayStack() {
+    void displayStackGraphic() {
 
         int lastIndex = 9;
         for (int i = 0; i < 8; i++) {
@@ -216,7 +222,7 @@ class Game {
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
         cn.getTextWindow().output("Time:" + Integer.toString(TIME) + " ");
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 1 + OFFSET_Y);
-        cn.getTextWindow().output("Score:" + Integer.toString(SCORE) + "   ");
+        cn.getTextWindow().output("Score:" + Integer.toString(SCORE) + "       ");
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
         cn.getTextWindow().output("Mode:" + MODE + "                     ");
         displayInputQueue(12 + OFFSET_X, 5 + OFFSET_Y);
@@ -227,7 +233,20 @@ class Game {
             System.out.println(
                     "                                                                                                   ");
         }
-        displayStack();
+        displayStackGraphic();
+        if (!isCorrectExpression && evaluationComplete && hasDivisionByZero) {
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
+            cn.getTextWindow().output("Division by Zero! -20 Points");
+        } else if (!isCorrectExpression && evaluationComplete) {
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
+            cn.getTextWindow().output("Invalid Expression! -20 Points");
+        } else if (isCorrectExpression && evaluationComplete) {
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
+            cn.getTextWindow().output("Valid Expression! +" + pointsWon + " Points");
+        } else {
+            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
+            cn.getTextWindow().output("                              ");
+        }
     }
 
     void takeKeyPress() {
@@ -393,7 +412,6 @@ class Game {
     }
 
     boolean isValidExpression() {
-        boolean isValid = true;
         int counter = 0;
         for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
             if (tryParseInt(EXPRESSIONQUEUEDISPLAY[i])) { // If the elements is a number
@@ -401,23 +419,63 @@ class Game {
             } else { // If element is an operator
                 counter -= 2;
                 if (counter < 0) {
-                    isValid = false;
-                    break;
+                    return false;
                 }
                 counter++;
             }
         }
         if (counter != 1) {
-            isValid = false;
+            return false;
         }
         if (EXPRESSIONQUEUE.size() == 1) {
-            isValid = false;
+            return false;
         }
-        return isValid;
+
+        return true;
+    }
+
+    boolean hasDivisionByZero() {
+        int queueSize = EXPRESSIONQUEUE.size();
+        Stack checkStack = new Stack(queueSize);
+        Queue checkQueue = new Queue(queueSize);
+        for (int i = 0; i < queueSize; i++) {
+            Object obj = EXPRESSIONQUEUE.dequeue();
+            checkQueue.enqueue(obj);
+            EXPRESSIONQUEUE.enqueue(obj);
+        }
+
+        while (!checkQueue.isEmpty()) {
+            String element;
+            element = (String) checkQueue.dequeue();
+            int firstNumber;
+            int secondNumber;
+            int result = 0;
+            if (tryParseInt(element)) {
+                checkStack.push(element);
+            } else {
+                firstNumber = Integer.parseInt((String) checkStack.pop());
+                secondNumber = Integer.parseInt((String) checkStack.pop());
+                if (element.contains("+")) {
+                    result = firstNumber + secondNumber;
+                } else if (element.contains("-")) {
+                    result = secondNumber - firstNumber;
+                } else if (element.contains("*")) {
+                    result = firstNumber * secondNumber;
+                } else if (element.contains("/")) {
+                    if (firstNumber == 0) {
+                        return true;
+                    } else {
+                        result = secondNumber / firstNumber;
+                    }
+                }
+                checkStack.push(Integer.toString(result));
+            }
+        }
+        return false;
     }
 
     void evaluateExpression() {
-        if (isValidExpression()) {
+        if (isValidExpression() && !hasDivisionByZero()) {
             int scoreFactor = 0;
             boolean lastElementType = true; // True for numbers False for operators
             for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
@@ -442,7 +500,12 @@ class Game {
                 }
             }
             scoreFactor *= scoreFactor;
+            pointsWon = scoreFactor;
             SCORE += scoreFactor;
+
+        } else if(isValidExpression() && hasDivisionByZero()){
+            hasDivisionByZero = true;
+            SCORE -= 20;
         } else {
             SCORE -= 20;
             evaluationComplete = true;
@@ -455,6 +518,7 @@ class Game {
         int firstNumber;
         int secondNumber;
         int result = 0;
+        boolean hasDivisionByZero = false;
         if (tryParseInt(element)) {
             EVALUATIONSTACK.push(element);
         } else {
@@ -468,7 +532,7 @@ class Game {
                 result = firstNumber * secondNumber;
             } else if (element.contains("/")) {
                 if (firstNumber == 0) {
-                    result = 0;
+                    hasDivisionByZero = true;
                 } else {
                     result = secondNumber / firstNumber;
                 }
@@ -476,6 +540,11 @@ class Game {
             EVALUATIONSTACK.push(Integer.toString(result));
             if (EXPRESSIONQUEUE.isEmpty()) {
                 evaluationComplete = true;
+                isCorrectExpression = true;
+            }
+            if (hasDivisionByZero) {
+                evaluationComplete = true;
+                isCorrectExpression = false;
             }
         }
         updateExpressionQueueDisplay();
@@ -483,7 +552,6 @@ class Game {
     }
 
     void evaluation() throws InterruptedException {
-        evaluationComplete = false;
         evaluateExpression();
         while (!evaluationComplete) {
             displayGameScreen();
@@ -496,6 +564,9 @@ class Game {
         updateExpressionQueueDisplay();
         emptyEvaluationStack();
         emptyEvaluationStackDisplay();
+        isCorrectExpression = false;
+        evaluationComplete = false;
+        hasDivisionByZero = false;
         MODE = "Free";
         free();
     }
