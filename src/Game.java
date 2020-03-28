@@ -29,6 +29,9 @@ class Game {
 
     private int TIME;
     private String MODE;
+    private String FREE = "Free";
+    private String TAKE = "Take";
+    private String EVALUATION = "Evaluation";
     private int SCORE;
     private Board b;
     private int timeDecreaseLimit = 1000; // A second in miliseconds
@@ -51,7 +54,7 @@ class Game {
         b.updateInputQueueDisplay();
         DELAY = 20;
         TIME = 60;
-        MODE = "Free";
+        MODE = FREE;
         SCORE = 0;
         EXPRESSIONQUEUE = new Queue(10000);
         EXPRESSIONQUEUEDISPLAY = new String[40];
@@ -215,25 +218,36 @@ class Game {
     }
 
     void displayGameScreen() {
-        cn.getTextWindow().setCursorPosition(0, 0);
+        // Board display
+        cn.getTextWindow().setCursorPosition(0 + OFFSET_X, 0 + OFFSET_Y);
         b.displayBoard();
+
+        // Cursor display
         cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
         cn.getTextWindow().output(b.getBoard()[py][px], attr);
+
+        // Game parameter display
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
         cn.getTextWindow().output("Time:" + Integer.toString(TIME) + " ");
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 1 + OFFSET_Y);
         cn.getTextWindow().output("Score:" + Integer.toString(SCORE) + "       ");
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
         cn.getTextWindow().output("Mode:" + MODE + "                     ");
+
+        // Expression queue display
         displayInputQueue(12 + OFFSET_X, 5 + OFFSET_Y);
-        if (MODE.equalsIgnoreCase("Take") || MODE.equalsIgnoreCase("Evaluation")) {
+        if (MODE.equalsIgnoreCase(TAKE) || MODE.equalsIgnoreCase(EVALUATION)) {
             displayExpressionQueue(0 + OFFSET_X, 10 + OFFSET_Y);
         } else {
             cn.getTextWindow().setCursorPosition(0 + OFFSET_X, 10 + OFFSET_Y);
             System.out.println(
                     "                                                                                                   ");
         }
+
+        // Stack display
         displayStackGraphic();
+
+        // Expression state
         if (!isCorrectExpression && evaluationComplete && hasDivisionByZero) {
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
             cn.getTextWindow().output("Division by Zero! -20 Points");
@@ -247,45 +261,63 @@ class Game {
             cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
             cn.getTextWindow().output("                              ");
         }
+
+        // Real-time status of the expression display
+        if(MODE.equalsIgnoreCase(TAKE)){
+            cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 5 + OFFSET_Y);
+            if(!isCorrectExpression && hasDivisionByZero){
+                cn.getTextWindow().output("Expression Status: ");
+                cn.getTextWindow().output("DIVISION BY ZERO!",redonblack);
+            } else if(!isCorrectExpression){
+                cn.getTextWindow().output("Expression Status: ");
+                cn.getTextWindow().output("INVALID          ",redonblack);
+            } else if(isCorrectExpression){
+                cn.getTextWindow().output("Expression Status: ");
+                cn.getTextWindow().output("VALID              ",greenonblack);
+            }
+        } else{
+            cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 5 + OFFSET_Y);
+            cn.getTextWindow().output("                                    ");
+        }
     }
 
     void takeKeyPress() {
         if (keypr == 1) { // if keyboard button pressed
             if ((rkey == KeyEvent.VK_LEFT || rkey == 97 || rkey == 65) && px > 0)
-                if (MODE.equalsIgnoreCase("Free")) {
+                if (MODE.equalsIgnoreCase(FREE)) {
                     px--;
-                } else if (MODE.equalsIgnoreCase("Take")) {
+                } else if (MODE.equalsIgnoreCase(TAKE)) {
                     move(-1, 0);
                 }
             if ((rkey == KeyEvent.VK_RIGHT || rkey == 100 || rkey == 68) && px + 1 < b.getBoard()[py].length)
-                if (MODE.equalsIgnoreCase("Free")) {
+                if (MODE.equalsIgnoreCase(FREE)) {
                     px++;
-                } else if (MODE.equalsIgnoreCase("Take")) {
+                } else if (MODE.equalsIgnoreCase(TAKE)) {
                     move(1, 0);
                 }
             if ((rkey == KeyEvent.VK_UP || rkey == 119 || rkey == 87) && py > 0)
-                if (MODE.equalsIgnoreCase("Free")) {
+                if (MODE.equalsIgnoreCase(FREE)) {
                     py--;
-                } else if (MODE.equalsIgnoreCase("Take")) {
+                } else if (MODE.equalsIgnoreCase(TAKE)) {
                     move(0, -1);
                 }
             if ((rkey == KeyEvent.VK_DOWN || rkey == 115 || rkey == 83) && py + 1 < b.getBoard().length)
-                if (MODE.equalsIgnoreCase("Free")) {
+                if (MODE.equalsIgnoreCase(FREE)) {
                     py++;
-                } else if (MODE.equalsIgnoreCase("Take")) {
+                } else if (MODE.equalsIgnoreCase(TAKE)) {
                     move(0, 1);
                 }
             if (rkey == 116 || rkey == 84) { // If the key pressed is T
-                if (MODE.equalsIgnoreCase("Free")) {
-                    MODE = "Take";
+                if (MODE.equalsIgnoreCase(FREE)) {
+                    MODE = TAKE;
                 }
             }
             if (rkey == 102 || rkey == 70) { // If the key pressed is F
-                if (MODE.equalsIgnoreCase("Take")) {
-                    MODE = "Evaluation";
+                if (MODE.equalsIgnoreCase(TAKE)) {
+                    MODE = EVALUATION;
                 }
             }
-            if (rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase("Evaluation")) {
+            if (rkey == KeyEvent.VK_SPACE && MODE.equalsIgnoreCase(EVALUATION)) {
                 // progress the stack evaluation
                 progressExpressionEvaluation();
             }
@@ -298,7 +330,7 @@ class Game {
             timeDelayCounter = 0;
             TIME--;
         }
-        if (MODE.equalsIgnoreCase("Take")) {
+        if (MODE.equalsIgnoreCase(TAKE)) {
             timeDelayCounter += DELAY;
         }
     }
@@ -409,6 +441,17 @@ class Game {
             }
         }
         updateExpressionQueueDisplay();
+
+        if (isValidExpression()) {
+            if (hasDivisionByZero()) {
+                isCorrectExpression = false;
+                hasDivisionByZero = true;
+            } else {
+                isCorrectExpression = true;
+            }
+        } else {
+            isCorrectExpression = false;
+        }
     }
 
     boolean isValidExpression() {
@@ -503,7 +546,7 @@ class Game {
             pointsWon = scoreFactor;
             SCORE += scoreFactor;
 
-        } else if(isValidExpression() && hasDivisionByZero()){
+        } else if (isValidExpression() && hasDivisionByZero()) {
             hasDivisionByZero = true;
             SCORE -= 20;
         } else {
@@ -552,6 +595,9 @@ class Game {
     }
 
     void evaluation() throws InterruptedException {
+        isCorrectExpression = false;
+        evaluationComplete = false;
+        hasDivisionByZero = false;
         evaluateExpression();
         while (!evaluationComplete) {
             displayGameScreen();
@@ -559,7 +605,7 @@ class Game {
             Thread.sleep(DELAY);
         }
         displayGameScreen();
-        Thread.sleep(1000);
+        Thread.sleep(1500);
         emptyExpressionQueue();
         updateExpressionQueueDisplay();
         emptyEvaluationStack();
@@ -567,7 +613,7 @@ class Game {
         isCorrectExpression = false;
         evaluationComplete = false;
         hasDivisionByZero = false;
-        MODE = "Free";
+        MODE = FREE;
         free();
     }
 
@@ -578,13 +624,13 @@ class Game {
             displayGameScreen();
             takeKeyPress();
             Thread.sleep(DELAY);
-            if (MODE.equalsIgnoreCase("Evaluation")) {
+            if (MODE.equalsIgnoreCase(EVALUATION)) {
                 b.pushFromQueueToBoard();
                 b.updateInputQueueDisplay();
                 evaluation();
             }
         }
-        MODE = "Evaluation";
+        MODE = EVALUATION;
         b.pushFromQueueToBoard();
         b.updateInputQueueDisplay();
         evaluation();
@@ -595,7 +641,7 @@ class Game {
             displayGameScreen();
             takeKeyPress();
             Thread.sleep(DELAY);
-            if (MODE.equalsIgnoreCase("Take")) {
+            if (MODE.equalsIgnoreCase(TAKE)) {
                 take();
             }
         }
