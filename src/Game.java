@@ -12,12 +12,13 @@ class Game {
     public TextAttributes attr;
     public TextAttributes redonblack;
     public TextAttributes greenonblack;
-    public int OFFSET_X = 0;
+    public int OFFSET_X = 2;
     public int OFFSET_Y = 0;
     public Color c;
     public TextMouseListener tmlis;
     public KeyListener klis;
     public Scanner sc;
+
     // ------ Standard variables for mouse and keyboard ------
     public int mousepr; // mouse pressed?
     public int mousex, mousey; // mouse text coords.
@@ -219,7 +220,7 @@ class Game {
 
     void displayGameScreen() {
         // Board display
-        cn.getTextWindow().setCursorPosition(0 + OFFSET_X, 0 + OFFSET_Y);
+        cn.getTextWindow().setCursorPosition(0, 0);
         b.displayBoard();
 
         // Cursor display
@@ -263,19 +264,19 @@ class Game {
         }
 
         // Real-time status of the expression display
-        if(MODE.equalsIgnoreCase(TAKE)){
+        if (MODE.equalsIgnoreCase(TAKE)) {
             cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 5 + OFFSET_Y);
-            if(!isCorrectExpression && hasDivisionByZero){
+            if (!isCorrectExpression && hasDivisionByZero) {
                 cn.getTextWindow().output("Expression Status: ");
-                cn.getTextWindow().output("DIVISION BY ZERO!",redonblack);
-            } else if(!isCorrectExpression){
+                cn.getTextWindow().output("DIVISION BY ZERO!", redonblack);
+            } else if (!isCorrectExpression) {
                 cn.getTextWindow().output("Expression Status: ");
-                cn.getTextWindow().output("INVALID          ",redonblack);
-            } else if(isCorrectExpression){
+                cn.getTextWindow().output("INVALID          ", redonblack);
+            } else if (isCorrectExpression) {
                 cn.getTextWindow().output("Expression Status: ");
-                cn.getTextWindow().output("VALID              ",greenonblack);
+                cn.getTextWindow().output("VALID            ", greenonblack);
             }
-        } else{
+        } else {
             cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 5 + OFFSET_Y);
             cn.getTextWindow().output("                                    ");
         }
