@@ -3,8 +3,6 @@ import enigma.event.TextMouseEvent;
 import enigma.event.TextMouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
-
 import enigma.console.TextAttributes;
 import java.awt.Color;
 import java.util.Scanner;
@@ -118,32 +116,23 @@ class Game {
 
     void showFinalScreen() {
         cn.getTextWindow().setCursorPosition(0, 13 + OFFSET_Y);
+        TextAttributes textcolor;
         if (SCORE > 0) {
-            cn.getTextWindow().output(" _____                        _____                ", greenonblack);
-            System.out.println();
-            cn.getTextWindow().output("|  __ \\                      |  _  |               ", greenonblack);
-            System.out.println();
-            cn.getTextWindow().output("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ", greenonblack);
-            System.out.println();
-            cn.getTextWindow().output("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|", greenonblack);
-            System.out.println();
-            cn.getTextWindow().output("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ", greenonblack);
-            System.out.println();
-            cn.getTextWindow().output(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ", greenonblack);
+            textcolor = greenonblack;
         } else {
-            cn.getTextWindow().output(" _____                        _____                ", redonblack);
-            System.out.println();
-            cn.getTextWindow().output("|  __ \\                      |  _  |               ", redonblack);
-            System.out.println();
-            cn.getTextWindow().output("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ", redonblack);
-            System.out.println();
-            cn.getTextWindow().output("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|", redonblack);
-            System.out.println();
-            cn.getTextWindow().output("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ", redonblack);
-            System.out.println();
-            cn.getTextWindow().output(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ", redonblack);
+            textcolor = redonblack;
         }
-
+        cn.getTextWindow().output(" _____                        _____                ", textcolor);
+        System.out.println();
+        cn.getTextWindow().output("|  __ \\                      |  _  |               ", textcolor);
+        System.out.println();
+        cn.getTextWindow().output("| |  \\/ __ _ _ __ ___   ___  | | | |_   _____ _ __ ", textcolor);
+        System.out.println();
+        cn.getTextWindow().output("| | __ / _` | '_ ` _ \\ / _ \\ | | | \\ \\ / / _ \\ '__|", textcolor);
+        System.out.println();
+        cn.getTextWindow().output("| |_\\ \\ (_| | | | | | |  __/ \\ \\_/ /\\ V /  __/ |   ", textcolor);
+        System.out.println();
+        cn.getTextWindow().output(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ", textcolor);
     }
 
     void displayExpressionQueue(int px, int py) {
