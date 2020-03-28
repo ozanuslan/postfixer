@@ -3,6 +3,8 @@ import enigma.event.TextMouseEvent;
 import enigma.event.TextMouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
+
 import enigma.console.TextAttributes;
 import java.awt.Color;
 import java.util.Scanner;
@@ -12,7 +14,7 @@ class Game {
     public TextAttributes attr;
     public TextAttributes redonblack;
     public TextAttributes greenonblack;
-    public int OFFSET_X = 2;
+    public int OFFSET_X = 0;
     public int OFFSET_Y = 0;
     public Color c;
     public TextMouseListener tmlis;
@@ -224,7 +226,7 @@ class Game {
         b.displayBoard();
 
         // Cursor display
-        cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
+        cn.getTextWindow().setCursorPosition(px, py);
         cn.getTextWindow().output(b.getBoard()[py][px], attr);
 
         // Game parameter display
@@ -235,36 +237,43 @@ class Game {
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
         cn.getTextWindow().output("Mode:" + MODE + "                     ");
 
-        // Expression queue display
+        // Input queue display
         displayInputQueue(12 + OFFSET_X, 5 + OFFSET_Y);
+
+        // Expression queue display
         if (MODE.equalsIgnoreCase(TAKE) || MODE.equalsIgnoreCase(EVALUATION)) {
-            displayExpressionQueue(0 + OFFSET_X, 10 + OFFSET_Y);
+            displayExpressionQueue(11 + OFFSET_X, 10 + OFFSET_Y);
         } else {
             cn.getTextWindow().setCursorPosition(0 + OFFSET_X, 10 + OFFSET_Y);
-            System.out.println(
-                    "                                                                                                   ");
+            System.out.println("                                                                                     ");
         }
 
         // Stack display
         displayStackGraphic();
 
         // Expression state
-        if (!isCorrectExpression && evaluationComplete && hasDivisionByZero) {
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
-            cn.getTextWindow().output("Division by Zero! -20 Points");
-        } else if (!isCorrectExpression && evaluationComplete) {
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
-            cn.getTextWindow().output("Invalid Expression! -20 Points");
-        } else if (isCorrectExpression && evaluationComplete) {
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
-            cn.getTextWindow().output("Valid Expression! +" + pointsWon + " Points");
+        if (MODE.equalsIgnoreCase(EVALUATION)) {
+            cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 7 + OFFSET_Y);
+            if (!isCorrectExpression && evaluationComplete && hasDivisionByZero) {
+                cn.getTextWindow().output("Division by Zero! ");
+                cn.getTextWindow().output(Integer.toString(-20), redonblack);
+                cn.getTextWindow().output(" Points");
+            } else if (!isCorrectExpression && evaluationComplete) {
+                cn.getTextWindow().output("Invalid Expression! ");
+                cn.getTextWindow().output(Integer.toString(-20), redonblack);
+                cn.getTextWindow().output(" Points");
+            } else if (isCorrectExpression && evaluationComplete) {
+                cn.getTextWindow().output("Valid Expression! ");
+                cn.getTextWindow().output("+" + Integer.toString(pointsWon), greenonblack);
+                cn.getTextWindow().output(" Points");
+            }
         } else {
-            cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 9 + OFFSET_Y);
+            cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 7 + OFFSET_Y);
             cn.getTextWindow().output("                              ");
         }
 
         // Real-time status of the expression display
-        if (MODE.equalsIgnoreCase(TAKE)) {
+        if (MODE.equalsIgnoreCase(TAKE) || MODE.equalsIgnoreCase(EVALUATION)) {
             cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 5 + OFFSET_Y);
             if (!isCorrectExpression && hasDivisionByZero) {
                 cn.getTextWindow().output("Expression Status: ");
@@ -596,9 +605,7 @@ class Game {
     }
 
     void evaluation() throws InterruptedException {
-        isCorrectExpression = false;
-        evaluationComplete = false;
-        hasDivisionByZero = false;
+
         evaluateExpression();
         while (!evaluationComplete) {
             displayGameScreen();
@@ -606,7 +613,7 @@ class Game {
             Thread.sleep(DELAY);
         }
         displayGameScreen();
-        Thread.sleep(1500);
+        Thread.sleep(2000);
         emptyExpressionQueue();
         updateExpressionQueueDisplay();
         emptyEvaluationStack();
