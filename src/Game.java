@@ -28,15 +28,13 @@ class Game {
     int px = 5, py = 5;
     // ----------------------------------------------------
 
-    private int TIME;
     private String MODE;
     private String FREE = "Free";
     private String TAKE = "Take";
     private String EVALUATION = "Evaluation";
     private int SCORE;
     private Board b;
-    private int timeDecreaseLimit = 1000; // A second in miliseconds
-    private int timeDelayCounter = 0; // A counter for counting miliseconds
+    private Time TIME;
     private Queue EXPRESSIONQUEUE;
     private String[] EXPRESSIONQUEUEDISPLAY;
     private boolean evaluationComplete;
@@ -54,7 +52,7 @@ class Game {
         b = new Board();
         b.updateInputQueueDisplay();
         DELAY = 20;
-        TIME = 60;
+        TIME = new Time(60, DELAY);
         MODE = FREE;
         SCORE = 0;
         EXPRESSIONQUEUE = new Queue(10000);
@@ -220,7 +218,7 @@ class Game {
 
         // Game parameter display
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
-        cn.getTextWindow().output("Time:" + Integer.toString(TIME) + " ");
+        cn.getTextWindow().output("Time:" + Integer.toString(TIME.getTime()) + " ");
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 1 + OFFSET_Y);
         cn.getTextWindow().output("Score:" + Integer.toString(SCORE) + "       ");
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 2 + OFFSET_Y);
@@ -321,16 +319,6 @@ class Game {
                 progressExpressionEvaluation();
             }
             keypr = 0; // last action
-        }
-    }
-
-    void progressTime() {
-        if (timeDelayCounter >= timeDecreaseLimit) {
-            timeDelayCounter = 0;
-            TIME--;
-        }
-        if (MODE.equalsIgnoreCase(TAKE)) {
-            timeDelayCounter += DELAY;
         }
     }
 
@@ -594,7 +582,6 @@ class Game {
     }
 
     void evaluation() throws InterruptedException {
-
         evaluateExpression();
         while (!evaluationComplete) {
             displayGameScreen();
@@ -616,11 +603,11 @@ class Game {
 
     void take() throws InterruptedException {
         takeSymbol();
-        while (TIME > 0) {
-            progressTime();
+        while (TIME.getTime() > 0) {
             displayGameScreen();
             takeKeyPress();
             Thread.sleep(DELAY);
+            TIME.progressTime();
             if (MODE.equalsIgnoreCase(EVALUATION)) {
                 b.pushFromQueueToBoard();
                 b.updateInputQueueDisplay();
@@ -634,7 +621,7 @@ class Game {
     }
 
     void free() throws InterruptedException {
-        while (TIME > 0) {
+        while (TIME.getTime() > 0) {
             displayGameScreen();
             takeKeyPress();
             Thread.sleep(DELAY);
