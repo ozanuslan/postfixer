@@ -7,7 +7,7 @@ class Time {
         milisecondCounter = 0;
     }
 
-    void progressTime() {
+    public void progressTime() {
         if (milisecondCounter >= 1000) {
             milisecondCounter %= 1000;
             time--;
@@ -16,7 +16,7 @@ class Time {
         }
     } 
 
-    int getTime(){
+    public int getTime(){
         return time;
     }
 }

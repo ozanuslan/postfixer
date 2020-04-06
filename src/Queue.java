@@ -9,14 +9,14 @@ class Queue {
         rear = -1;
     }
 
-    void enqueue(Object obj) {
+    public void enqueue(Object obj) {
         if (!isFull()) {
             rear++;
             queue[rear] = obj;
         }
     }
 
-    Object dequeue() {
+    public Object dequeue() {
         if (!isEmpty()) {
             Object rtr = queue[front];
             queue[front] = null;
@@ -27,7 +27,7 @@ class Queue {
         }
     }
 
-    Object peek() {
+    public Object peek() {
         if(!isEmpty()){
             return queue[front];
         }
@@ -36,7 +36,7 @@ class Queue {
         }
     }
 
-    int size() {
+    public int size() {
         return rear - front + 1;
     }
 
@@ -44,7 +44,7 @@ class Queue {
         return rear + 1 == queue.length;
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return rear < front;
     }
 }

@@ -43,19 +43,19 @@ class Board {
         }
     }
 
-    String removeSymbolFromBoard(int px, int py){
+    public String removeSymbolFromBoard(int px, int py){
         String returnSymbol;
         returnSymbol = BOARD[py][px];
         BOARD[py][px] = ".";
         return returnSymbol;
     }
 
-    void pushFromQueueToBoard() {
+    public void pushFromQueueToBoard() {
         int neededSymbolCount = startingSymbolCount - countSymbolsOnBoard();
         fillBoardRandomly(neededSymbolCount); 
     }
 
-    int countSymbolsOnBoard() {
+    public int countSymbolsOnBoard() {
         int symbolCount = 0;
         for (String[] row : BOARD) {
             for (String col : row) {
@@ -67,7 +67,7 @@ class Board {
         return symbolCount;
     }
 
-    void fillMainInputQueue() {
+    public void fillMainInputQueue() {
         while (MAININPUTQUEUE.size() < 8) {
             MAININPUTQUEUE.enqueue(SOURCEINPUTQUEUE.dequeue());
         }
@@ -81,7 +81,7 @@ class Board {
         }
     }
 
-    void clearBoard() {
+    public void clearBoard() {
         for (int i = 0; i < BOARD.length; i++) {
             for (int j = 0; j < BOARD[i].length; j++) {
                 BOARD[i][j] = ".";
@@ -89,7 +89,7 @@ class Board {
         }
     }
 
-    void fillBoardRandomly(int symbolCount) {
+    public void fillBoardRandomly(int symbolCount) {
         int randomRowIndex;
         int randomColIndex;
         String randomSymbol;

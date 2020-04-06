@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 class Game {
     public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 85, 20, 24, 0);
-    public TextAttributes attr;
+    public TextAttributes blackongreen;
     public TextAttributes redonblack;
     public TextAttributes greenonblack;
     public int OFFSET_X = 0;
@@ -24,10 +24,10 @@ class Game {
     public int mousex, mousey; // mouse text coords.
     public int keypr; // key pressed?
     public int rkey; // key (for press/release)
-    public int DELAY;
-    int px = 5, py = 5;
+    private int px = 5, py = 5;
     // ----------------------------------------------------
 
+    public int DELAY;
     private String MODE;
     private String FREE = "Free";
     private String TAKE = "Take";
@@ -36,17 +36,17 @@ class Game {
     private Board b;
     private Time TIME;
     private Queue EXPRESSIONQUEUE;
-    private String[] EXPRESSIONQUEUEDISPLAY;
+    public String[] EXPRESSIONQUEUEDISPLAY;
     private boolean evaluationComplete;
     private boolean isCorrectExpression;
     private boolean hasDivisionByZero;
-    private int pointsWon;
+    public int pointsWon;
     private Stack EVALUATIONSTACK;
-    private String[] EVALUATIONSTACKDISPLAY;
+    public String[] EVALUATIONSTACKDISPLAY;
 
-    Game() throws Exception { // --- Contructor
+    public Game() throws Exception { // --- Constructor
         inputSetup();
-        attr = new TextAttributes(c.BLACK, c.GREEN);
+        blackongreen = new TextAttributes(c.BLACK, c.GREEN);
         redonblack = new TextAttributes(c.RED, c.BLACK);
         greenonblack = new TextAttributes(c.GREEN, c.BLACK);
         b = new Board();
@@ -65,7 +65,7 @@ class Game {
         emptyEvaluationStackDisplay();
     }
 
-    void inputSetup() {
+    private void inputSetup() {
         sc = new Scanner(System.in);
         // ------ Standard code for mouse and keyboard ------ Do not change
         tmlis = new TextMouseListener() {
@@ -103,16 +103,16 @@ class Game {
         // ----------------------------------------------------
     }
 
-    void displayInputQueue(int px, int py) {
+    private void displayInputQueue(int px, int py) {
         cn.getTextWindow().setCursorPosition(px, py - 1);
-        cn.getTextWindow().output("<<<<<<<<", attr);
+        cn.getTextWindow().output("<<<<<<<<", blackongreen);
         cn.getTextWindow().setCursorPosition(px, py + 1);
-        cn.getTextWindow().output("<<<<<<<<", attr);
+        cn.getTextWindow().output("<<<<<<<<", blackongreen);
         cn.getTextWindow().setCursorPosition(px, py);
         b.displayInputQueue();
     }
 
-    void showFinalScreen() {
+    private void showFinalScreen() {
         cn.getTextWindow().setCursorPosition(0, 13 + OFFSET_Y);
         TextAttributes textcolor;
         if (SCORE > 0) {
@@ -133,7 +133,7 @@ class Game {
         cn.getTextWindow().output(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   ", textcolor);
     }
 
-    void displayExpressionQueue(int px, int py) {
+    private void displayExpressionQueue(int px, int py) {
         cn.getTextWindow().setCursorPosition(px + OFFSET_X, py + OFFSET_Y);
         System.out.print("Expression: ");
         for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
@@ -142,13 +142,13 @@ class Game {
         System.out.println("                   ");
     }
 
-    void emptyExpressionQueue() {
+    private void emptyExpressionQueue() {
         while (!EXPRESSIONQUEUE.isEmpty()) {
             EXPRESSIONQUEUE.dequeue();
         }
     }
 
-    void updateExpressionQueueDisplay() {
+    private void updateExpressionQueueDisplay() {
         String temp;
         int size = EXPRESSIONQUEUE.size();
         for (int i = 0; i < EXPRESSIONQUEUEDISPLAY.length; i++) {
@@ -161,19 +161,19 @@ class Game {
         }
     }
 
-    void emptyEvaluationStack() {
+    private void emptyEvaluationStack() {
         while (!EVALUATIONSTACK.isEmpty()) {
             EVALUATIONSTACK.pop();
         }
     }
 
-    void emptyEvaluationStackDisplay() {
+    private void emptyEvaluationStackDisplay() {
         for (int i = 0; i < EVALUATIONSTACKDISPLAY.length; i++) {
             EVALUATIONSTACKDISPLAY[i] = "         ";
         }
     }
 
-    void updateEvaluationStackDisplay() {
+    private void updateEvaluationStackDisplay() {
         String element;
         int stackSize = EVALUATIONSTACK.size();
 
@@ -189,7 +189,7 @@ class Game {
         }
     }
 
-    void displayStackGraphic() {
+    private void displayStackGraphic() {
 
         int lastIndex = 9;
         for (int i = 0; i < 8; i++) {
@@ -202,19 +202,21 @@ class Game {
 
         for (int i = 0; i < EVALUATIONSTACKDISPLAY.length; i++) {
             lastIndex--;
-            cn.getTextWindow().setCursorPosition(30 + OFFSET_X, 1 + OFFSET_Y + lastIndex);
-            System.out.println(EVALUATIONSTACKDISPLAY[i]);
+            if (1 + OFFSET_Y + lastIndex > 0) {
+                cn.getTextWindow().setCursorPosition(30 + OFFSET_X, 1 + OFFSET_Y + lastIndex);
+                System.out.println(EVALUATIONSTACKDISPLAY[i]);
+            }
         }
     }
 
-    void displayGameScreen() {
+    public void displayGameScreen() {
         // Board display
         cn.getTextWindow().setCursorPosition(0, 0);
         b.displayBoard();
 
         // Cursor display
         cn.getTextWindow().setCursorPosition(px, py);
-        cn.getTextWindow().output(b.getBoard()[py][px], attr);
+        cn.getTextWindow().output(b.getBoard()[py][px], blackongreen);
 
         // Game parameter display
         cn.getTextWindow().setCursorPosition(12 + OFFSET_X, 0 + OFFSET_Y);
@@ -238,7 +240,7 @@ class Game {
         // Stack display
         displayStackGraphic();
 
-        // Expression state
+        // Expression outcome
         if (MODE.equalsIgnoreCase(EVALUATION)) {
             cn.getTextWindow().setCursorPosition(45 + OFFSET_X, 7 + OFFSET_Y);
             if (!isCorrectExpression && evaluationComplete && hasDivisionByZero) {
@@ -278,7 +280,7 @@ class Game {
         }
     }
 
-    void takeKeyPress() {
+    public void takeKeyPress() {
         if (keypr == 1) { // if keyboard button pressed
             if ((rkey == KeyEvent.VK_LEFT || rkey == 97 || rkey == 65) && px > 0)
                 if (MODE.equalsIgnoreCase(FREE)) {
@@ -322,14 +324,14 @@ class Game {
         }
     }
 
-    void takeSymbol() {
+    private void takeSymbol() {
         if (!b.getBoard()[py][px].contains(".")) {
             EXPRESSIONQUEUE.enqueue(b.removeSymbolFromBoard(px, py));
             updateExpressionQueueDisplay();
         }
     }
 
-    boolean tryParseInt(String s) {
+    private boolean tryParseInt(String s) {
         try {
             Integer.parseInt(s);
             return true;
@@ -338,12 +340,12 @@ class Game {
         }
     }
 
-    boolean containsOperator() {
+    private boolean containsOperator() {
         return b.getBoard()[py][px].contains("+") || b.getBoard()[py][px].contains("-")
                 || b.getBoard()[py][px].contains("*") || b.getBoard()[py][px].contains("/");
     }
 
-    boolean hasOperatorAhead(int dirx, int diry) {
+    private boolean hasOperatorAhead(int dirx, int diry) {
         boolean hasSymAhead = false;
         int tempx = px;
         int tempy = py;
@@ -366,7 +368,7 @@ class Game {
         return hasSymAhead;
     }
 
-    boolean hasNumberAhead(int dirx, int diry) {
+    private boolean hasNumberAhead(int dirx, int diry) {
         boolean hasNumAhead = false;
         int tempx = px;
         int tempy = py;
@@ -388,7 +390,7 @@ class Game {
         return hasNumAhead;
     }
 
-    boolean hasNeighborNumber(int dirx, int diry) {
+    private boolean hasNeighborNumber(int dirx, int diry) {
         if (py + diry >= 0 && py + diry < b.getBoard().length && px + dirx >= 0
                 && px + dirx < b.getBoard()[py].length) {
             return tryParseInt(b.getBoard()[py + diry][px + dirx]);
@@ -397,7 +399,7 @@ class Game {
         }
     }
 
-    void move(int dirx, int diry) {
+    public void move(int dirx, int diry) {
         String combinedNumber;
         while (py >= 0 && py < b.getBoard().length && px >= 0 && px < b.getBoard()[py].length) {
             combinedNumber = "";
@@ -441,7 +443,7 @@ class Game {
         }
     }
 
-    boolean isValidExpression() {
+    public boolean isValidExpression() {
         int counter = 0;
         for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
             if (tryParseInt(EXPRESSIONQUEUEDISPLAY[i])) { // If the elements is a number
@@ -464,7 +466,7 @@ class Game {
         return true;
     }
 
-    boolean hasDivisionByZero() {
+    public boolean hasDivisionByZero() {
         int queueSize = EXPRESSIONQUEUE.size();
         Stack checkStack = new Stack(queueSize);
         Queue checkQueue = new Queue(queueSize);
@@ -504,7 +506,7 @@ class Game {
         return false;
     }
 
-    void evaluateExpression() {
+    public void evaluateExpression() {
         if (isValidExpression() && !hasDivisionByZero()) {
             int scoreFactor = 0;
             boolean lastElementType = true; // True for numbers False for operators
@@ -542,7 +544,7 @@ class Game {
         }
     }
 
-    void progressExpressionEvaluation() {
+    private void progressExpressionEvaluation() {
         String element;
         element = (String) EXPRESSIONQUEUE.dequeue();
         int firstNumber;
@@ -581,7 +583,7 @@ class Game {
         updateEvaluationStackDisplay();
     }
 
-    void evaluation() throws InterruptedException {
+    public void evaluation() throws InterruptedException {
         evaluateExpression();
         while (!evaluationComplete) {
             displayGameScreen();
@@ -601,7 +603,7 @@ class Game {
         free();
     }
 
-    void take() throws InterruptedException {
+    public void take() throws InterruptedException {
         takeSymbol();
         while (TIME.getTime() > 0) {
             displayGameScreen();
@@ -620,7 +622,7 @@ class Game {
         evaluation();
     }
 
-    void free() throws InterruptedException {
+    public void free() throws InterruptedException {
         while (TIME.getTime() > 0) {
             displayGameScreen();
             takeKeyPress();
@@ -635,7 +637,7 @@ class Game {
         System.exit(0);
     }
 
-    void play() throws InterruptedException {
+    public void play() throws InterruptedException {
         free();
     }
 }
