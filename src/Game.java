@@ -8,7 +8,7 @@ import java.awt.Color;
 import java.util.Scanner;
 
 class Game {
-    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 85, 20, 24, 0);
+    public enigma.console.Console cn = Enigma.getConsole("Post-Fixer", 85, 20, 24, 1);
     public TextAttributes blackongreen;
     public TextAttributes redonblack;
     public TextAttributes greenonblack;
@@ -445,7 +445,11 @@ class Game {
 
     public boolean isValidExpression() {
         int counter = 0;
-        for (int i = 0; i < EXPRESSIONQUEUE.size(); i++) {
+        if (EXPRESSIONQUEUE.size() == 1) {
+            return false;
+        }
+        int queueSize = EXPRESSIONQUEUE.size();
+        for (int i = 0; i < queueSize; i++) {
             if (tryParseInt(EXPRESSIONQUEUEDISPLAY[i])) { // If the elements is a number
                 counter++;
             } else { // If element is an operator
@@ -457,9 +461,6 @@ class Game {
             }
         }
         if (counter != 1) {
-            return false;
-        }
-        if (EXPRESSIONQUEUE.size() == 1) {
             return false;
         }
 
