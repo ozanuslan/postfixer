@@ -3,7 +3,7 @@ import java.util.Random;
 class Board {
     private String[][] BOARD;
     private String[] SYMBOLS = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "*", "/" };
-    private Queue MAININPUTQUEUE;
+    private Queue INPUTQUEUE;
     private int inputQueueSize;
     private Random rnd;
     private int startingSymbolCount;
@@ -13,11 +13,11 @@ class Board {
         inputQueueSize = 10000;
         startingSymbolCount = 40;
         BOARD = new String[10][10];
-        MAININPUTQUEUE = new Queue(inputQueueSize);
+        INPUTQUEUE = new Queue(inputQueueSize);
         DISPLAYQUEUE = new String[8];
         rnd = new Random();
         clearBoard();
-        fillMainInputQueue();
+        fillInputQueue();
         fillBoardRandomly(startingSymbolCount);
     }
 
@@ -35,9 +35,9 @@ class Board {
     void updateInputQueueDisplay(){
         String temp;
         for(int i = 0; i < 8; i++){
-            temp = (String)MAININPUTQUEUE.dequeue();
+            temp = (String)INPUTQUEUE.dequeue();
             DISPLAYQUEUE[i] = temp;
-            MAININPUTQUEUE.enqueue(temp);
+            INPUTQUEUE.enqueue(temp);
         }
     }
 
@@ -65,11 +65,11 @@ class Board {
         return symbolCount;
     }
 
-    public void fillMainInputQueue() {
+    public void fillInputQueue() {
         int rndNum;
-        while (MAININPUTQUEUE.size() < 8) {
+        while (INPUTQUEUE.size() < 8) {
             rndNum = rnd.nextInt(SYMBOLS.length);
-            MAININPUTQUEUE.enqueue(SYMBOLS[rndNum]);
+            INPUTQUEUE.enqueue(SYMBOLS[rndNum]);
         }
     }
 
@@ -88,8 +88,8 @@ class Board {
         boolean cannotPlaceSymbol;
 
         for (int i = 0; i < symbolCount; i++) {
-            fillMainInputQueue();
-            randomSymbol = (String) MAININPUTQUEUE.dequeue();
+            fillInputQueue();
+            randomSymbol = (String) INPUTQUEUE.dequeue();
             cannotPlaceSymbol = true;
 
             while (cannotPlaceSymbol) {
@@ -104,7 +104,7 @@ class Board {
                 }
             }
         }
-        fillMainInputQueue();
+        fillInputQueue();
     }
 
     void displayBoard() {
