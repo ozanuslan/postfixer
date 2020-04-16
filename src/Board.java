@@ -3,7 +3,6 @@ import java.util.Random;
 class Board {
     private String[][] BOARD;
     private String[] SYMBOLS = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "*", "/" };
-    private Queue SOURCEINPUTQUEUE;
     private Queue MAININPUTQUEUE;
     private int inputQueueSize;
     private Random rnd;
@@ -14,12 +13,11 @@ class Board {
         inputQueueSize = 10000;
         startingSymbolCount = 40;
         BOARD = new String[10][10];
-        SOURCEINPUTQUEUE = new Queue(inputQueueSize);
         MAININPUTQUEUE = new Queue(inputQueueSize);
         DISPLAYQUEUE = new String[8];
         rnd = new Random();
-        fillSourceInputQueueRandomly();
         clearBoard();
+        fillMainInputQueue();
         fillBoardRandomly(startingSymbolCount);
     }
 
@@ -68,16 +66,10 @@ class Board {
     }
 
     public void fillMainInputQueue() {
-        while (MAININPUTQUEUE.size() < 8) {
-            MAININPUTQUEUE.enqueue(SOURCEINPUTQUEUE.dequeue());
-        }
-    }
-
-    void fillSourceInputQueueRandomly() {
         int rndNum;
-        for (int i = 0; i < inputQueueSize; i++) {
+        while (MAININPUTQUEUE.size() < 8) {
             rndNum = rnd.nextInt(SYMBOLS.length);
-            SOURCEINPUTQUEUE.enqueue(SYMBOLS[rndNum]);
+            MAININPUTQUEUE.enqueue(SYMBOLS[rndNum]);
         }
     }
 
